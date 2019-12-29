@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using System.Collections.Generic;
 
 namespace host_als
@@ -8,14 +7,12 @@ namespace host_als
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
             IEnumerable<DdcMonitorItem> result = MonitorManager.EnumerateMonitors();
 
             foreach(var m in result){
                 m.UpdateBrightness();
                 Console.WriteLine(m);
-
-                m.SetBrightness(40);
+                //m.SetBrightness(40);
             }
         }            
     }

@@ -33,19 +33,6 @@ internal abstract class MonitorItem : IMonitor, IDisposable
     public abstract bool UpdateBrightness(int brightness = -1);
     public abstract bool SetBrightness(int brightness);
 
-    // public override string ToString()
-    // {
-    //     return SimpleSerialization.Serialize(
-    //         (nameof(Type), this.GetType().Name),
-    //         (nameof(DeviceInstanceId), DeviceInstanceId),
-    //         (nameof(Description), Description),
-    //         (nameof(DisplayIndex), DisplayIndex),
-    //         (nameof(MonitorIndex), MonitorIndex),
-    //         (nameof(IsReachable), IsReachable),
-    //         (nameof(Brightness), Brightness),
-    //         (nameof(BrightnessSystemAdjusted), BrightnessSystemAdjusted));
-    // }
-
     #region IDisposable
 
     private bool _isDisposed = false;

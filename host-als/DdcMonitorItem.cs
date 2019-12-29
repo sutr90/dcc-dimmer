@@ -6,15 +6,13 @@ using System.Runtime.InteropServices;
 internal class DdcMonitorItem : MonitorItem
 {
     private readonly SafePhysicalMonitorHandle _handle;
-    private readonly bool _useLowLevel;
 
     public DdcMonitorItem(
         string deviceInstanceId,
         string description,
         byte displayIndex,
         byte monitorIndex,
-        SafePhysicalMonitorHandle handle,
-        bool useLowLevel = false) : base(
+        SafePhysicalMonitorHandle handle) : base(
             deviceInstanceId: deviceInstanceId,
             description: description,
             displayIndex: displayIndex,
@@ -22,7 +20,6 @@ internal class DdcMonitorItem : MonitorItem
             isReachable: true)
     {
         this._handle = handle ?? throw new ArgumentNullException(nameof(handle));
-        this._useLowLevel = useLowLevel;
     }
 
     private uint _minimum = 0; // Raw minimum brightness (not always 0)
@@ -30,7 +27,7 @@ internal class DdcMonitorItem : MonitorItem
 
     public override bool UpdateBrightness(int brightness = -1)
     {
-        var (success, minimum, current, maximum) = MonitorConfiguration.GetBrightness(_handle, _useLowLevel);
+        var (success, minimum, current, maximum) = MonitorConfiguration.GetBrightness(_handle);
 
         if (!success || !(minimum < maximum) || !(minimum <= current) || !(current <= maximum))
         {
@@ -50,7 +47,7 @@ internal class DdcMonitorItem : MonitorItem
 
         var buffer = (uint)Math.Round(brightness / 100D * (_maximum - _minimum) + _minimum, MidpointRounding.AwayFromZero);
 
-        if (MonitorConfiguration.SetBrightness(_handle, buffer, _useLowLevel))
+        if (MonitorConfiguration.SetBrightness(_handle, buffer))
         {
             this.Brightness = brightness;
             return true;
@@ -83,8 +80,8 @@ internal class DdcMonitorItem : MonitorItem
 
     public override String ToString()
     {
-        var format = "Brightness {0}, Description {1}, LowLevel {2}";
-        return string.Format(format, this.Brightness, this.Description, this._useLowLevel);
+        var format = "Brightness {0}, Description {1}, DisplayIndex {2}, MonitorIndex {3}";
+        return string.Format(format, this.Brightness, this.Description, this.DisplayIndex, this.MonitorIndex);
     }
 }
 

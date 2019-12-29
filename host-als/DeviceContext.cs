@@ -95,49 +95,7 @@ internal class DeviceContext
         DISPLAY_DEVICE_ACTIVE = 0x00000001,
         DISPLAY_DEVICE_ATTACHED = 0x00000002,
     }
-
-    [StructLayout(LayoutKind.Explicit, CharSet = CharSet.Ansi)]
-    private struct DEVMODE
-    {
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
-        [FieldOffset(0)] public string dmDeviceName;
-
-        [FieldOffset(36)] public ushort dmSize;
-
-        [FieldOffset(40)] public DM dmFields; // uint
-
-        [FieldOffset(52)] public DMDO dmDisplayOrientation; // uint
-
-        [FieldOffset(102)] public ushort dmLogPixels;
-        [FieldOffset(104)] public uint dmBitsPerPel;
-        [FieldOffset(108)] public uint dmPelsWidth;
-        [FieldOffset(112)] public uint dmPelsHeight;
-    }
-
-    [Flags]
-    private enum DM : uint
-    {
-        DM_DISPLAYORIENTATION = 0x00000080,
-        DM_LOGPIXELS = 0x00020000,
-        DM_BITSPERPEL = 0x00040000,
-        DM_PELSWIDTH = 0x00080000,
-        DM_PELSHEIGHT = 0x00100000
-    }
-
-    /// <summary>
-    /// DEVMODE Display Orientation (anti-clockwise from user's viewpoint) 
-    /// </summary>
-    private enum DMDO : uint
-    {
-        DMDO_DEFAULT = 0,
-        DMDO_90 = 1,
-        DMDO_180 = 2,
-        DMDO_270 = 3
-    }
-
     private const uint EDD_GET_DEVICE_INTERFACE_NAME = 0x00000001;
-    private const int ENUM_CURRENT_SETTINGS = -1;
-    private const int DISP_CHANGE_SUCCESSFUL = 0;
 
     #endregion
 
@@ -195,10 +153,6 @@ internal class DeviceContext
         foreach (var (_, displayIndex, monitor, monitorIndex) in EnumerateDevices())
         {
             var deviceInstanceId = GetDeviceInstanceId(monitor.DeviceID);
-
-            //Debug.WriteLine($"DeviceId: {monitor.DeviceID}");
-            //Debug.WriteLine($"DeviceInstanceId: {deviceInstanceId}");
-            //Debug.WriteLine($"DeviceString: {monitor.DeviceString}");
 
             yield return new DeviceItem(
                 deviceInstanceId: deviceInstanceId,

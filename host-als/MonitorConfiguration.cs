@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
-using System.Text;
+
 
 class MonitorConfiguration
 {
@@ -22,12 +21,6 @@ class MonitorConfiguration
         IntPtr hMonitor,
         uint dwPhysicalMonitorArraySize,
         [Out] PHYSICAL_MONITOR[] pPhysicalMonitorArray);
-
-    [DllImport("Dxva2.dll", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool DestroyPhysicalMonitors(
-        uint dwPhysicalMonitorArraySize,
-        [In] PHYSICAL_MONITOR[] pPhysicalMonitorArray);
 
     [DllImport("Dxva2.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -55,38 +48,7 @@ class MonitorConfiguration
         SafePhysicalMonitorHandle hMonitor,
         uint dwNewBrightness);
 
-    [DllImport("Dxva2.dll", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool GetCapabilitiesStringLength(
-        SafePhysicalMonitorHandle hMonitor,
-        out uint pdwCapabilitiesStringLengthInCharacters);
-
-    [DllImport("Dxva2.dll", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool CapabilitiesRequestAndCapabilitiesReply(
-        SafePhysicalMonitorHandle hMonitor,
-
-        [MarshalAs(UnmanagedType.LPStr)]
-            [Out] StringBuilder pszASCIICapabilitiesString,
-
-        uint dwCapabilitiesStringLengthInCharacters);
-
-    [DllImport("Dxva2.dll", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool GetVCPFeatureAndVCPFeatureReply(
-        SafePhysicalMonitorHandle hMonitor,
-        byte bVCPCode,
-        out LPMC_VCP_CODE_TYPE pvct,
-        out uint pdwCurrentValue,
-        out uint pdwMaximumValue);
-
-    [DllImport("Dxva2.dll", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool SetVCPFeature(
-        SafePhysicalMonitorHandle hMonitor,
-        byte bVCPCode,
-        uint dwNewValue);
-
+    
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
     public struct PHYSICAL_MONITOR
     {
@@ -128,14 +90,6 @@ class MonitorConfiguration
         MC_SUPPORTED_COLOR_TEMPERATURE_11500K = 0x00000080
     }
 
-    private enum LPMC_VCP_CODE_TYPE
-    {
-        MC_MOMENTARY,
-        MC_SET_PARAMETER
-    }
-
-    private const byte LuminanceCode = 0x10; // VCP Code of Luminance
-
     #endregion
 
     #region Type
@@ -151,37 +105,26 @@ class MonitorConfiguration
 
         public SafePhysicalMonitorHandle Handle { get; }
 
-        public bool IsSupported => IsHighLevelSupported || IsLowLevelSupported;
+        public bool IsSupported => IsHighLevelSupported;
 
         [DataMember(Order = 2)]
         public bool IsHighLevelSupported { get; private set; }
-
-        [DataMember(Order = 3)]
-        public bool IsLowLevelSupported { get; private set; }
-
-        [DataMember(Order = 4)]
-        public string Capabilities { get; private set; }
-
         public PhysicalItem(
             string description,
             int monitorIndex,
             SafePhysicalMonitorHandle handle,
-            bool isHighLevelSupported,
-            bool isLowLevelSupported = false,
-            string capabilities = null)
+            bool isHighLevelSupported)
         {
             this.Description = description;
             this.MonitorIndex = monitorIndex;
             this.Handle = handle;
             this.IsHighLevelSupported = isHighLevelSupported;
-            this.IsLowLevelSupported = isLowLevelSupported;
-            this.Capabilities = capabilities;
         }
     }
 
     #endregion
 
-    public static IEnumerable<PhysicalItem> EnumeratePhysicalMonitors(IntPtr monitorHandle, bool verbose = false)
+    public static IEnumerable<PhysicalItem> EnumeratePhysicalMonitors(IntPtr monitorHandle)
     {
         if (!GetNumberOfPhysicalMonitorsFromHMONITOR(
             monitorHandle,
@@ -220,41 +163,12 @@ class MonitorConfiguration
                     out _)
                     && caps.HasFlag(MC_CAPS.MC_CAPS_BRIGHTNESS);
 
-                bool isLowLevelSupported = false;
-                string capabilities = null;
-
-                if (!isHighLevelSupported || verbose)
-                {
-                    if (GetCapabilitiesStringLength(
-                        handle,
-                        out uint capabilitiesStringLength))
-                    {
-                        var capabilitiesString = new StringBuilder((int)capabilitiesStringLength);
-
-                        if (CapabilitiesRequestAndCapabilitiesReply(
-                            handle,
-                            capabilitiesString,
-                            capabilitiesStringLength))
-                        {
-                            capabilities = capabilitiesString.ToString();
-                            isLowLevelSupported = IsLowLevelSupported(capabilities);
-                        }
-                    }
-                }
-
-                //Debug.WriteLine($"Description: {physicalMonitor.szPhysicalMonitorDescription}");
-                //Debug.WriteLine($"Handle: {physicalMonitor.hPhysicalMonitor}");
-                //Debug.WriteLine($"IsHighLevelSupported: {isHighLevelSupported}");
-                //Debug.WriteLine($"IsLowLevelSupported: {isLowLevelSupported}");
-                //Debug.WriteLine($"Capabilities: {capabilities}");
 
                 yield return new PhysicalItem(
                     description: physicalMonitor.szPhysicalMonitorDescription,
                     monitorIndex: monitorIndex,
                     handle: handle,
-                    isHighLevelSupported: isHighLevelSupported,
-                    isLowLevelSupported: isLowLevelSupported,
-                    capabilities: verbose ? capabilities : null);
+                    isHighLevelSupported: isHighLevelSupported);
 
                 monitorIndex++;
             }
@@ -265,69 +179,10 @@ class MonitorConfiguration
         }
     }
 
-    private static bool IsLowLevelSupported(string source)
-    {
-        if (string.IsNullOrWhiteSpace(source))
-            return false;
-
-        int index = source.IndexOf("vcp", StringComparison.OrdinalIgnoreCase);
-        if (index < 0)
-            return false;
-
-        return EnumerateCodes().Any(x => x == "10"); // 10 (hex) is VCP Code of Luminance.
-
-        IEnumerable<string> EnumerateCodes()
-        {
-            int depth = 0;
-            var buffer = new StringBuilder(2);
-
-            foreach (char c in source.Skip(index + 3))
-            {
-                switch (c)
-                {
-                    case '(':
-                        depth++;
-                        break;
-                    case ')':
-                        depth--;
-                        if (depth <= 0)
-                        {
-                            if (0 < buffer.Length)
-                            {
-                                yield return buffer.ToString();
-                            }
-                            yield break; // End of enumeration
-                        }
-                        break;
-                    default:
-                        if (depth == 1)
-                        {
-                            if (char.IsWhiteSpace(c))
-                            {
-                                if (buffer.Length < 1)
-                                    continue;
-                            }
-                            else
-                            {
-                                buffer.Append(c);
-                                if (buffer.Length < 2)
-                                    continue;
-                            }
-
-                            yield return buffer.ToString();
-                            buffer.Clear();
-                        }
-                        break;
-                }
-            }
-        }
-    }
-
     /// <summary>
     /// Gets raw brightnesses not represented in percentage.
     /// </summary>
     /// <param name="physicalMonitorHandle">Physical monitor handle</param>
-    /// <param name="useLowLevel">Whether to use low level function</param>
     /// <returns>
     /// <para>success: True if successfully gets</para>
     /// <para>minimum: Raw minimum brightness (not always 0)</para>
@@ -340,7 +195,7 @@ class MonitorConfiguration
     /// in percentage using those values. They are used to convert brightness in percentage
     /// back to raw brightness when settings brightness as well.
     /// </remarks>
-    public static (bool success, uint minimum, uint current, uint maximum) GetBrightness(SafePhysicalMonitorHandle physicalMonitorHandle, bool useLowLevel = false)
+    public static (bool success, uint minimum, uint current, uint maximum) GetBrightness(SafePhysicalMonitorHandle physicalMonitorHandle)
     {
         if (physicalMonitorHandle is null)
             throw new ArgumentNullException(nameof(physicalMonitorHandle));
@@ -351,39 +206,20 @@ class MonitorConfiguration
             return (success: false, 0, 0, 0);
         }
 
-        if (!useLowLevel)
+
+        if (!GetMonitorBrightness(
+            physicalMonitorHandle,
+            out uint minimumBrightness,
+            out uint currentBrightness,
+            out uint maximumBrightness))
         {
-            if (!GetMonitorBrightness(
-                physicalMonitorHandle,
-                out uint minimumBrightness,
-                out uint currentBrightness,
-                out uint maximumBrightness))
-            {
-                Debug.WriteLine($"Failed to get brightnesses. ");
-                return (success: false, 0, 0, 0);
-            }
-            return (success: true,
-                minimum: minimumBrightness,
-                current: currentBrightness,
-                maximum: maximumBrightness);
+            Debug.WriteLine($"Failed to get brightnesses. ");
+            return (success: false, 0, 0, 0);
         }
-        else
-        {
-            if (!GetVCPFeatureAndVCPFeatureReply(
-                physicalMonitorHandle,
-                LuminanceCode,
-                out _,
-                out uint currentValue,
-                out uint maximumValue))
-            {
-                Debug.WriteLine($"Failed to get brightnesses (Low level). ");
-                return (success: false, 0, 0, 0);
-            }
-            return (success: true,
-                minimum: 0,
-                current: currentValue,
-                maximum: maximumValue);
-        }
+        return (success: true,
+            minimum: minimumBrightness,
+            current: currentBrightness,
+            maximum: maximumBrightness);
     }
 
     /// <summary>
@@ -393,7 +229,7 @@ class MonitorConfiguration
     /// <param name="brightness">Raw brightness (not always 0 to 100)</param>
     /// <param name="useLowLevel">Whether to use low level function</param>
     /// <returns>True if successfully sets</returns>
-    public static bool SetBrightness(SafePhysicalMonitorHandle physicalMonitorHandle, uint brightness, bool useLowLevel = false)
+    public static bool SetBrightness(SafePhysicalMonitorHandle physicalMonitorHandle, uint brightness)
     {
         if (physicalMonitorHandle is null)
             throw new ArgumentNullException(nameof(physicalMonitorHandle));
@@ -404,26 +240,12 @@ class MonitorConfiguration
             return false;
         }
 
-        if (!useLowLevel)
+        if (!SetMonitorBrightness(
+            physicalMonitorHandle,
+            brightness))
         {
-            if (!SetMonitorBrightness(
-                physicalMonitorHandle,
-                brightness))
-            {
-                Debug.WriteLine($"Failed to set brightness. ");
-                return false;
-            }
-        }
-        else
-        {
-            if (!SetVCPFeature(
-                physicalMonitorHandle,
-                LuminanceCode,
-                brightness))
-            {
-                Debug.WriteLine($"Failed to set brightness (Low level). ");
-                return false;
-            }
+            Debug.WriteLine($"Failed to set brightness. ");
+            return false;
         }
         return true;
     }
