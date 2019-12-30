@@ -14,9 +14,9 @@ void setup() {
 
 void loop() {
     uint8_t megabuff[USB_DATA_SIZE];
-    for (uint8_t i = 0; i < sizeof(megabuff); i++) {
-      megabuff[i] = i;
-    }
+    auto time = millis();
+    megabuff[0] = lowByte(time);
+    megabuff[1] = highByte(time);
     HidAls.write(megabuff, sizeof(megabuff));
 
     delay(300);
