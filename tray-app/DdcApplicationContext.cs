@@ -16,9 +16,7 @@ namespace tray_app
             ToolStripItem button1 = new ToolStripMenuItem("Configuration", null, ShowConfig);
             ToolStripItem button2 = new ToolStripMenuItem("Exit", null, Exit);
 
-            notifyIcon.Icon = tray_app.Resources.AppIcon;//Icon.ExtractAssociatedIcon("D:\\dev\\ddc-dimmer\\tray-app\\AppIcon.ico");
-            notifyIcon.DoubleClick += new EventHandler(ShowMessage);
-
+            notifyIcon.Icon = tray_app.Resources.AppIcon;
 
             ContextMenuStrip contextMenuStrip = new ContextMenuStrip();
             contextMenuStrip.Items.Add(button1);
@@ -26,7 +24,6 @@ namespace tray_app
 
             notifyIcon.ContextMenuStrip = contextMenuStrip;
             notifyIcon.Visible = true;
-
         }
 
         void ShowConfig(object sender, EventArgs e)
@@ -36,11 +33,6 @@ namespace tray_app
                 configWindow.Focus();
             else
                 configWindow.ShowDialog();
-        }
-
-        void ShowMessage(object sender, EventArgs e)
-        {
-            MessageBox.Show("Hello World");
         }
 
         void Exit(object sender, EventArgs e)

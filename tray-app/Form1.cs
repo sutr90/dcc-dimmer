@@ -12,9 +12,17 @@ namespace tray_app
 {
     public partial class Form1 : Form
     {
+        private bool disabled = false;
+
         public Form1()
         {
             InitializeComponent();
+        }
+
+        private void disableButton_Click(object sender, EventArgs e)
+        {
+            disabled = !disabled;
+            this.disableButton.Text = disabled ? "Enable" : "Disable";
         }
 
     }
