@@ -37,6 +37,7 @@ namespace tray_app
 
         void Exit(object sender, EventArgs e)
         {
+            configWindow.Shutdown();
             notifyIcon.Visible = false;
             Application.Exit();
         }
