@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
@@ -13,15 +14,11 @@ namespace tray_app
 {
     public partial class Form1 : Form
     {
+        private List<DdcMonitorItem> monitors = new List<DdcMonitorItem>();
 
-        public class Flag
-        {
-            public bool disabled = false;
-        }
+        private bool disabled = false;
 
         private CancellationTokenSource tokenSource;
-
-        private Flag  flag = new Flag();
 
         public Form1()
         {
@@ -39,40 +36,61 @@ namespace tray_app
             tokenSource = new CancellationTokenSource();
             var progress = new Progress<string>(s => currentBrightnessLabel.Text = s);
             var token = tokenSource.Token;
-           _ = Task.Factory.StartNew(() => LongWork(token, flag, progress), TaskCreationOptions.LongRunning);
+            _ = Task.Factory.StartNew(() => LongWork(token, this, progress), TaskCreationOptions.LongRunning);
 
             await loadMonitors();
         }
 
         private async Task loadMonitors()
         {
-            Task<string> s = Task.Run(()=>MonitorLoader());
-            label1.Text = await s; 
-        }
+            Task<List<DdcMonitorItem>> monitorsTask = Task.Run(() => MonitorManager.EnumerateMonitors().ToList());
+            var monitorList = await monitorsTask;
 
-        private async Task<string> MonitorLoader() {
-            await Task.Delay(15000);
-            return "data";
+            this.monitors.Clear();
+            foreach (var m in monitorList)
+            {
+                this.monitors.Add(m);
+            }
+
+            if (this.monitors.Count > 0)
+            {
+                listBox1.BeginUpdate();
+                listBox1.Items.Clear();
+                foreach (var item in this.monitors)
+                {
+                    listBox1.Items.Add(item.Description);
+                }
+                listBox1.EndUpdate();
+            }
         }
 
         private void disableButton_Click(object sender, EventArgs e)
         {
-            flag.disabled = !flag.disabled;
-            this.disableButton.Text = flag.disabled ? "Enable" : "Disable";
+            disabled = !disabled;
+            this.disableButton.Text = disabled ? "Enable" : "Disable";
         }
 
-        public void LongWork(CancellationToken token, Flag flag, IProgress<string> progress)
+        public void LongWork(CancellationToken token, Form1 form, IProgress<string> progress)
         {
-            // Perform a long running work...
             while (true)
             {
-                if(flag.disabled) continue;
+                if (form.disabled) continue;
 
                 if (token.IsCancellationRequested)
                     break;
-                Task.Delay(500).Wait();
-                progress.Report(new Random().Next().ToString());
-            }
+
+                if (form.monitors.Count > 0)
+                {
+                    foreach (var monitor in form.monitors)
+                    {
+                        monitor.UpdateBrightness();
+                    }
+
+                    progress.Report(form.monitors[0].Brightness.ToString());
+                }
+
+                Task.Delay(5000).Wait();
+            }            
         }
     }
 }

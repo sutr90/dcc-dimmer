@@ -112,13 +112,7 @@
             this.listBox1 = new System.Windows.Forms.ListBox();
             listBox1.Bounds = new System.Drawing.Rectangle(new System.Drawing.Point(13, 125), new System.Drawing.Size(215, 64));
             listBox1.BeginUpdate();
-            
-            // Loop through and add 50 items to the ListBox.
-            for (int x = 1; x <= 5; x++)
-            {
-                listBox1.Items.Add("Item " + x.ToString());
-            }
-            // Allow the ListBox to repaint and display the new items.
+            listBox1.Items.Add("No monitors found.");
             listBox1.EndUpdate();
 
             // 
@@ -126,7 +120,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(240, 120);
+            this.ClientSize = new System.Drawing.Size(240, 200);
             this.Controls.Add(this.disableButton);
             this.Controls.Add(this.setBrightnessButton);
             this.Controls.Add(this.sensorValueLabel);
@@ -135,11 +129,12 @@
             this.Controls.Add(this.currentBrightnessLabel);
             this.Controls.Add(this.label1);
             this.Controls.Add(listBox1);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
             this.Name = "Form1";
-            this.Text = "Configuration";
+            this.Text = "HID ALS";
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
 
         #endregion
