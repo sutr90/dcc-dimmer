@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace host_als
 {
@@ -7,7 +8,7 @@ namespace host_als
     {
         static void Main(string[] args)
         {
-            IEnumerable<DdcMonitorItem> result = MonitorManager.EnumerateMonitors();
+            List<DdcMonitorItem> result = MonitorManager.EnumerateMonitors().ToList();
 
             foreach(var m in result){
                 m.UpdateBrightness();

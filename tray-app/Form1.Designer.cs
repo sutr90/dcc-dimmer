@@ -33,7 +33,7 @@
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.sensorValueLabel = new System.Windows.Forms.Label();
-            this.button2 = new System.Windows.Forms.Button();
+            this.setBrightnessButton = new System.Windows.Forms.Button();
             this.disableButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
@@ -87,12 +87,12 @@
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(134, 46);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(95, 23);
-            this.button2.TabIndex = 4;
-            this.button2.Text = "Set brightness";
-            this.button2.UseVisualStyleBackColor = true;
+            this.setBrightnessButton.Location = new System.Drawing.Point(134, 46);
+            this.setBrightnessButton.Name = "button2";
+            this.setBrightnessButton.Size = new System.Drawing.Size(95, 25);
+            this.setBrightnessButton.TabIndex = 4;
+            this.setBrightnessButton.Text = "Set brightness";
+            this.setBrightnessButton.UseVisualStyleBackColor = true;
             // 
             // button3
             // 
@@ -103,6 +103,24 @@
             this.disableButton.Text = "Disable";
             this.disableButton.UseVisualStyleBackColor = true;
             this.disableButton.Click += new System.EventHandler(this.disableButton_Click);
+
+
+            //
+            // ListBox
+            //
+            // Create a new ListBox control.
+            this.listBox1 = new System.Windows.Forms.ListBox();
+            listBox1.Bounds = new System.Drawing.Rectangle(new System.Drawing.Point(13, 125), new System.Drawing.Size(215, 64));
+            listBox1.BeginUpdate();
+            
+            // Loop through and add 50 items to the ListBox.
+            for (int x = 1; x <= 5; x++)
+            {
+                listBox1.Items.Add("Item " + x.ToString());
+            }
+            // Allow the ListBox to repaint and display the new items.
+            listBox1.EndUpdate();
+
             // 
             // Form1
             // 
@@ -110,12 +128,13 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(240, 120);
             this.Controls.Add(this.disableButton);
-            this.Controls.Add(this.button2);
+            this.Controls.Add(this.setBrightnessButton);
             this.Controls.Add(this.sensorValueLabel);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.currentBrightnessLabel);
             this.Controls.Add(this.label1);
+            this.Controls.Add(listBox1);
             this.Name = "Form1";
             this.Text = "Configuration";
             this.ResumeLayout(false);
@@ -130,8 +149,9 @@
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label sensorValueLabel;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button setBrightnessButton;
         private System.Windows.Forms.Button disableButton;
+        private System.Windows.Forms.ListBox listBox1;
 
     }
 }

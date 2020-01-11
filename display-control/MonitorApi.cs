@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 
 
-class MonitorConfiguration
+class MonitorApi
 {
     #region Win32
 

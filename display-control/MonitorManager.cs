@@ -13,7 +13,7 @@ class MonitorManager
         // Obtained by DDC/CI
         foreach (var handleItem in DeviceContext.GetMonitorHandles())
         {
-            foreach (var physicalItem in MonitorConfiguration.EnumeratePhysicalMonitors(handleItem.MonitorHandle))
+            foreach (var physicalItem in MonitorApi.EnumeratePhysicalMonitors(handleItem.MonitorHandle))
             {
                 int index = -1;
                 if (physicalItem.IsSupported)

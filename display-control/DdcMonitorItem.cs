@@ -3,8 +3,18 @@ using System.Runtime.InteropServices;
 /// <summary>
 /// Physical monitor controlled by DDC/CI (external monitor)
 /// </summary>
-internal class DdcMonitorItem : MonitorItem
+internal class DdcMonitorItem
 {
+
+    
+    public string DeviceInstanceId { get; }
+    public string Description { get; }
+    public byte DisplayIndex { get; }
+    public byte MonitorIndex { get; }
+    public bool IsReachable { get; }
+
+    public int Brightness { get; protected set; } = -1;
+    public int BrightnessSystemAdjusted { get; protected set; } = -1;
     private readonly SafePhysicalMonitorHandle _handle;
 
     public DdcMonitorItem(
@@ -12,22 +22,26 @@ internal class DdcMonitorItem : MonitorItem
         string description,
         byte displayIndex,
         byte monitorIndex,
-        SafePhysicalMonitorHandle handle) : base(
-            deviceInstanceId: deviceInstanceId,
-            description: description,
-            displayIndex: displayIndex,
-            monitorIndex: monitorIndex,
-            isReachable: true)
+        SafePhysicalMonitorHandle handle)
     {
         this._handle = handle ?? throw new ArgumentNullException(nameof(handle));
+        if (string.IsNullOrWhiteSpace(deviceInstanceId))
+            throw new ArgumentNullException(nameof(deviceInstanceId));
+        if (string.IsNullOrWhiteSpace(description))
+            throw new ArgumentNullException(nameof(description));
+
+        this.DeviceInstanceId = deviceInstanceId;
+        this.Description = description;
+        this.DisplayIndex = displayIndex;
+        this.MonitorIndex = monitorIndex;
     }
 
     private uint _minimum = 0; // Raw minimum brightness (not always 0)
     private uint _maximum = 100; // Raw maximum brightness (not always 100)
 
-    public override bool UpdateBrightness(int brightness = -1)
+    public bool UpdateBrightness(int brightness = -1)
     {
-        var (success, minimum, current, maximum) = MonitorConfiguration.GetBrightness(_handle);
+        var (success, minimum, current, maximum) = MonitorApi.GetBrightness(_handle);
 
         if (!success || !(minimum < maximum) || !(minimum <= current) || !(current <= maximum))
         {
@@ -40,14 +54,14 @@ internal class DdcMonitorItem : MonitorItem
         return true;
     }
 
-    public override bool SetBrightness(int brightness)
+    public bool SetBrightness(int brightness)
     {
         if ((brightness < 0) || (100 < brightness))
             throw new ArgumentOutOfRangeException(nameof(brightness), brightness, "The brightness must be within 0 to 100.");
 
         var buffer = (uint)Math.Round(brightness / 100D * (_maximum - _minimum) + _minimum, MidpointRounding.AwayFromZero);
 
-        if (MonitorConfiguration.SetBrightness(_handle, buffer))
+        if (MonitorApi.SetBrightness(_handle, buffer))
         {
             this.Brightness = brightness;
             return true;
@@ -59,7 +73,7 @@ internal class DdcMonitorItem : MonitorItem
 
     private bool _isDisposed = false;
 
-    protected override void Dispose(bool disposing)
+    protected void Dispose(bool disposing)
     {
         if (_isDisposed)
             return;
@@ -72,8 +86,6 @@ internal class DdcMonitorItem : MonitorItem
 
         // Free any unmanaged objects here.
         _isDisposed = true;
-
-        base.Dispose(disposing);
     }
 
     #endregion
@@ -96,6 +108,6 @@ internal class SafePhysicalMonitorHandle : SafeHandle
 
     protected override bool ReleaseHandle()
     {
-        return MonitorConfiguration.DestroyPhysicalMonitor(handle);
+        return MonitorApi.DestroyPhysicalMonitor(handle);
     }
 }

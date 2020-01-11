@@ -19,7 +19,6 @@ namespace tray_app
             public bool disabled = false;
         }
 
-
         private CancellationTokenSource tokenSource;
 
         private Flag  flag = new Flag();
@@ -40,7 +39,20 @@ namespace tray_app
             tokenSource = new CancellationTokenSource();
             var progress = new Progress<string>(s => currentBrightnessLabel.Text = s);
             var token = tokenSource.Token;
-            await Task.Factory.StartNew(() => LongWork(token, flag, progress), TaskCreationOptions.LongRunning);
+           _ = Task.Factory.StartNew(() => LongWork(token, flag, progress), TaskCreationOptions.LongRunning);
+
+            await loadMonitors();
+        }
+
+        private async Task loadMonitors()
+        {
+            Task<string> s = Task.Run(()=>MonitorLoader());
+            label1.Text = await s; 
+        }
+
+        private async Task<string> MonitorLoader() {
+            await Task.Delay(15000);
+            return "data";
         }
 
         private void disableButton_Click(object sender, EventArgs e)
@@ -49,7 +61,7 @@ namespace tray_app
             this.disableButton.Text = flag.disabled ? "Enable" : "Disable";
         }
 
-        public static void LongWork(CancellationToken token, Flag flag, IProgress<string> progress)
+        public void LongWork(CancellationToken token, Flag flag, IProgress<string> progress)
         {
             // Perform a long running work...
             while (true)
@@ -62,6 +74,5 @@ namespace tray_app
                 progress.Report(new Random().Next().ToString());
             }
         }
-
     }
 }
