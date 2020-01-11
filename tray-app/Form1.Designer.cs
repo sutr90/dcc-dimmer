@@ -30,12 +30,13 @@
         {
             this.label1 = new System.Windows.Forms.Label();
             this.currentBrightnessLabel = new System.Windows.Forms.Label();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.brightnessTextbox = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.sensorValueLabel = new System.Windows.Forms.Label();
             this.setBrightnessButton = new System.Windows.Forms.Button();
             this.disableButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
+            this.label6 = new System.Windows.Forms.Label();
             // 
             // label1
             // 
@@ -59,10 +60,11 @@
             // 
             // textBox1
             // 
-            this.textBox1.Location = new System.Drawing.Point(12, 47);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(105, 23);
-            this.textBox1.TabIndex = 3;
+            this.brightnessTextbox.Location = new System.Drawing.Point(12, 47);
+            this.brightnessTextbox.Name = "textBox1";
+            this.brightnessTextbox.Size = new System.Drawing.Size(105, 23);
+            this.brightnessTextbox.TabIndex = 3;
+            this.brightnessTextbox.TextChanged += new System.EventHandler(this.brightnessTextbox_TextChanged);
             // 
             // label3
             // 
@@ -93,6 +95,7 @@
             this.setBrightnessButton.TabIndex = 4;
             this.setBrightnessButton.Text = "Set brightness";
             this.setBrightnessButton.UseVisualStyleBackColor = true;
+            this.setBrightnessButton.Click += new System.EventHandler(this.setBrightnessButton_Click);
             // 
             // button3
             // 
@@ -104,13 +107,22 @@
             this.disableButton.UseVisualStyleBackColor = true;
             this.disableButton.Click += new System.EventHandler(this.disableButton_Click);
 
-
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.label6.Location = new System.Drawing.Point(12, 120);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(38, 15);
+            this.label6.TabIndex = 1;
+            this.label6.Text = "Detected Monitors";
             //
             // ListBox
             //
             // Create a new ListBox control.
             this.listBox1 = new System.Windows.Forms.ListBox();
-            listBox1.Bounds = new System.Drawing.Rectangle(new System.Drawing.Point(13, 125), new System.Drawing.Size(215, 64));
+            listBox1.Bounds = new System.Drawing.Rectangle(new System.Drawing.Point(13, 136), new System.Drawing.Size(215, 64));
             listBox1.BeginUpdate();
             listBox1.Items.Add("No monitors found.");
             listBox1.EndUpdate();
@@ -120,15 +132,16 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(240, 200);
+            this.ClientSize = new System.Drawing.Size(240, 210);
             this.Controls.Add(this.disableButton);
             this.Controls.Add(this.setBrightnessButton);
             this.Controls.Add(this.sensorValueLabel);
-            this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.brightnessTextbox);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.currentBrightnessLabel);
             this.Controls.Add(this.label1);
-            this.Controls.Add(listBox1);
+            this.Controls.Add(this.listBox1);
+            this.Controls.Add(this.label6);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.Name = "Form1";
@@ -140,8 +153,9 @@
         #endregion
 
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label currentBrightnessLabel;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox brightnessTextbox;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label sensorValueLabel;
         private System.Windows.Forms.Button setBrightnessButton;
