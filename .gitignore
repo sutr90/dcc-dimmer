@@ -1,1 +1,3 @@
-.vscode/**
+**/.vscode
+hid-als/.vscode/extensions.json
+ddc-dimmer.code-workspace
