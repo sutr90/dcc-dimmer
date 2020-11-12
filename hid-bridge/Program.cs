@@ -37,7 +37,7 @@ namespace HidSharp.Test
                 {
                     var dataValue = parser.GetValue(valueIndex);
                     Console.Write(string.Format("  {0}: {1}",
-                                      (Usage)dataValue.Usages.FirstOrDefault(), dataValue.GetLogicalValue()));
+                                      (Usage)dataValue.Usages.FirstOrDefault(), dataValue.GetLogicalValue().ToString("X")));
 
                 }
 
