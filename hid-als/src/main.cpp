@@ -25,9 +25,10 @@ void loop()
     previousMillis = currentMillis;
 
     uint8_t buffer[USB_DATA_SIZE];
-    auto sensorValue = analogRead(analogInPin);
-    buffer[0] = 1;
-    buffer[1] = 0;
+    buffer[0] = 0xef;
+    buffer[1] = 0xbe;
+    buffer[2] = 0xad;
+    buffer[3] = 0xde;
     HidAls.write(buffer, sizeof(buffer));
   }
 }

@@ -28,7 +28,7 @@ THE SOFTWARE.
 #include "HID.h"
 #include "PluggableUSB.h"
 
-#define USB_DATA_SIZE 2
+#define USB_DATA_SIZE 4
 
 #define EPTYPE_DESCRIPTOR_SIZE      uint8_t
 
