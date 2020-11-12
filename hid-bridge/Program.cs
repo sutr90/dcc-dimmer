@@ -31,8 +31,6 @@ namespace HidSharp.Test
     {
         static void WriteDeviceItemInputParserResult(Reports.Input.DeviceItemInputParser parser)
         {
-            if (parser.HasChanged)
-            {
                 int valueCount = parser.ValueCount;
 
                 for (int valueIndex = 0; valueIndex < valueCount; valueIndex++)
@@ -44,7 +42,6 @@ namespace HidSharp.Test
                 }
 
                 Console.WriteLine();
-            }
         }
 
         static void Main(string[] args)
@@ -147,7 +144,6 @@ namespace HidSharp.Test
                             HidStream hidStream;
                             if (dev.TryOpen(out hidStream))
                             {
-                                Console.WriteLine("Opened device.");
                                 hidStream.ReadTimeout = Timeout.Infinite;
 
                                 using (hidStream)
@@ -174,7 +170,7 @@ namespace HidSharp.Test
                                         };
                                     inputReceiver.Start(hidStream);
 
-                                    Thread.Sleep(20000);
+                                    Thread.Sleep(60000);
 
                                 }
 
