@@ -27,9 +27,9 @@ static const uint8_t  _hidReportDescriptorRawHID[] PROGMEM = {
   0x06, 0x89, 0xFF,            // (GLOBAL) USAGE_PAGE         0xFF89 Vendor Defined Page A 
   0x09, 0x01,                  // (LOCAL)  USAGE              0xFF890001 VendorUsage1 (Selector)  
   0xA1, 0x01,                  // (MAIN)   COLLECTION         0x01 Application (Usage=0xFF890001: Page=Vendor Defined Page A, Usage=VendorUsage1, Type=Selector)
-  0x75, 0x20,                  //   (GLOBAL) REPORT_SIZE        0x10 (16) Number of bits per field  
+  0x75, 0x10,                  //   (GLOBAL) REPORT_SIZE        0x10 (16) Number of bits per field  
   0x15, 0x00,                       //   (GLOBAL) LOGICAL_MINIMUM    (0)  
-  0x27, 0xFF, 0xFF, 0xFF, 0x7F,            //   (GLOBAL) LOGICAL_MAXIMUM    0xFFFF (65535)  
+  0x26, 0xFF, 0xFF,            //   (GLOBAL) LOGICAL_MAXIMUM    0xFFFF (65535)  
   0x95, 0x01,                  //   (GLOBAL) REPORT_COUNT       0x01 (1) Number of fields  
   0x09, 0x01,                  //   (LOCAL)  USAGE              0xFF890001 VendorUsage1 (Selector)  
   0x81, 0x02,                  //   (MAIN)   INPUT              0x00000002 (1 fields x 16 bits) 0=Data 1=Variable 0=Absolute 0=NoWrap 0=Linear 0=PrefState 0=NoNull 0=NonVolatile 0=Bitmap 

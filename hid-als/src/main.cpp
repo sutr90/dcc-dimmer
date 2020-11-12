@@ -27,8 +27,6 @@ void loop()
     uint8_t buffer[USB_DATA_SIZE];
     buffer[0] = 0xef;
     buffer[1] = 0xbe;
-    buffer[2] = 0xad;
-    buffer[3] = 0xde;
     HidAls.write(buffer, sizeof(buffer));
   }
 }
