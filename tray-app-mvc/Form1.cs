@@ -11,7 +11,7 @@ using System.Threading;
 using System.Windows.Forms;
 using System.Diagnostics;
 
-namespace tray_app
+namespace tray_app_mvc
 {
     public partial class Form1 : Form
     {
