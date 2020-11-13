@@ -11,10 +11,30 @@ using System.Threading;
 using System.Windows.Forms;
 using System.Diagnostics;
 
+using tray_app_mcv.View;
+using tray_app_mcv.Model;
+using tray_app_mcv.Controller;
+
 namespace tray_app_mvc
 {
-    public partial class Form1 : Form
+    public partial class Form1 :  Form, IView, IModelObserver
     {
+
+        IMonitorController controller;
+
+        public event ViewHandler<IView> changed;
+
+        public void setController(IController cont)
+        {
+            controller = (MonitorController) cont;
+        }
+
+        public void onModelEvent(IModel model, ModelEventArgs e){
+            if(model is MonitorModel){
+                this.currentBrightnessLabel.Text = e.newBrightness.ToString();
+            }
+        }
+
         private List<DdcMonitorItem> monitors = new List<DdcMonitorItem>();
 
         private bool disabled = false;
@@ -79,6 +99,8 @@ namespace tray_app_mvc
                 foreach(var m in this.monitors){
                     m.SetBrightness(b);
                 }
+
+                changed.Invoke(this, new ViewEventArgs(b));
             }
             catch
             {

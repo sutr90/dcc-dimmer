@@ -3,16 +3,26 @@ using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
+using tray_app_mcv.View;
+using tray_app_mcv.Model;
+using tray_app_mcv.Controller;
 
 namespace tray_app_mvc
 {
     public class DdcApplicationContext : ApplicationContext
     {
         NotifyIcon notifyIcon = new NotifyIcon();
-        Form1 configWindow = new Form1();
+        Form1 configWindow;
+        MonitorModel mdl;
+        IController cnt;
 
         public DdcApplicationContext()
         {
+            configWindow = new Form1();
+            mdl = new MonitorModel();
+            cnt = new MonitorController(configWindow, mdl);
+
+
             ToolStripItem button1 = new ToolStripMenuItem("Configuration", null, ShowConfig);
             ToolStripItem button2 = new ToolStripMenuItem("Exit", null, Exit);
 
