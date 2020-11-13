@@ -37,14 +37,14 @@ namespace HidSharp.Test
                 {
                     var dataValue = parser.GetValue(valueIndex).GetLogicalValue();
                    
-                    uint topMask = 0b1111_0000_0000_0000;
-                    uint bottomMask = 0b0000_1111_1111_1111;
+                    var topMask = 0b1111_0000_0000_0000;
+                    var bottomMask = 0b0000_1111_1111_1111;
 
-                    uint exp = (dataValue & topMask) >> 12;
-                    uint mantissa = dataValue & bottomMask;
-                    double lux = 0.01 * Math.Pow(2, exp) * mantissa;
+                    var exp = (dataValue & topMask) >> 12;
+                    var mantissa = dataValue & bottomMask;
+                    var lux = 0.01 * Math.Pow(2, exp) * mantissa;
                    
-                    Console.Write(string.Format("  {0}: {1}", (Usage)dataValue.Usages.FirstOrDefault(), lux));
+                    Console.Write(string.Format("lux: {0}", lux));
                 }
 
                 Console.WriteLine();
