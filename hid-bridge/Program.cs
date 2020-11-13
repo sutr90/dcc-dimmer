@@ -35,10 +35,16 @@ namespace HidSharp.Test
 
                 for (int valueIndex = 0; valueIndex < valueCount; valueIndex++)
                 {
-                    var dataValue = parser.GetValue(valueIndex);
-                    Console.Write(string.Format("  {0}: {1}",
-                                      (Usage)dataValue.Usages.FirstOrDefault(), dataValue.GetLogicalValue().ToString("X")));
+                    var dataValue = parser.GetValue(valueIndex).GetLogicalValue();
+                   
+                    uint topMask = 0b1111_0000_0000_0000;
+                    uint bottomMask = 0b0000_1111_1111_1111;
 
+                    uint exp = (dataValue & topMask) >> 12;
+                    uint mantissa = dataValue & bottomMask;
+                    double lux = 0.01 * Math.Pow(2, exp) * mantissa;
+                   
+                    Console.Write(string.Format("  {0}: {1}", (Usage)dataValue.Usages.FirstOrDefault(), lux));
                 }
 
                 Console.WriteLine();
