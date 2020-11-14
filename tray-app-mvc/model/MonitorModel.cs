@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace tray_app_mvc.model
 {
@@ -9,20 +10,21 @@ namespace tray_app_mvc.model
         public void SetCurrentBrightness(int currentBrightness)
         {
             _currentBrightness = currentBrightness;
-            var args = new BrightnessChangedEventArgs {Brightness = _currentBrightness};
+            var args = new ModelBrightnessChangedEventArgs {Brightness = _currentBrightness};
             OnBrightnessChanged(args);
         }
         
-        private void OnBrightnessChanged(BrightnessChangedEventArgs e)
+        private void OnBrightnessChanged(ModelBrightnessChangedEventArgs e)
         {
             var handler = BrightnessChanged;
+            Debug.Print("model raise ModelBrightnessChangedEventArgs");
             handler?.Invoke(this, e);
         }
         
-        public event EventHandler<BrightnessChangedEventArgs> BrightnessChanged;
+        public event EventHandler<ModelBrightnessChangedEventArgs> BrightnessChanged;
     }
 
-    public class BrightnessChangedEventArgs : EventArgs
+    public class ModelBrightnessChangedEventArgs : EventArgs
     {
         public int Brightness { get; set; }
     }

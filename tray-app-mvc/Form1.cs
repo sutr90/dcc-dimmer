@@ -7,17 +7,16 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using tray_app_mvc.controller;
 using tray_app_mvc.model;
+using tray_app_mvc.view;
 
 namespace tray_app_mvc
 {
-    public partial class Form1 :  Form
+    public partial class Form1 :  Form, IView
     {
-        private readonly MonitorUserController controller;
-        
-        public void OnMonitorBrightnessChanged(object? sender, BrightnessChangedEventArgs e)
+        public void OnMonitorBrightnessChanged(object? sender, ModelBrightnessChangedEventArgs e)
         {
+            Debug.Print("view recv ModelBrightnessChangedEventArgs");
             currentBrightnessLabel.Text = e.Brightness.ToString();
         }
 
@@ -27,9 +26,8 @@ namespace tray_app_mvc
 
         private CancellationTokenSource _tokenSource;
 
-        public Form1(MonitorUserController controller)
+        public Form1()
         {
-            this.controller = controller;
             InitializeComponent();
             StartTasks();
         }
@@ -87,12 +85,20 @@ namespace tray_app_mvc
                     m.SetBrightness(b);
                 }
 
-                controller.SetBrightness(b);
+                var args = new IView.ViewBrightnessChangedEventArgs {Brightness = b};
+                OnBrightnessChanged(args);
             }
             catch
             {
                 Debug.WriteLine("Failed to set brigthness");
             }
+        }
+        
+        private void OnBrightnessChanged(IView.ViewBrightnessChangedEventArgs e)
+        {
+            Debug.Print("view raise ViewBrightnessChangedEventArgs");
+            var handler = BrightnessChanged;
+            handler.Invoke(this, e);
         }
 
         private int GetBrigtnessValue()
@@ -148,5 +154,7 @@ namespace tray_app_mvc
                 Task.Delay(5000, token).Wait(token);
             }
         }
+
+        public event EventHandler<IView.ViewBrightnessChangedEventArgs> BrightnessChanged;
     }
 }

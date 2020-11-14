@@ -2,6 +2,7 @@ using System;
 using System.Windows.Forms;
 using tray_app_mvc.controller;
 using tray_app_mvc.model;
+using tray_app_mvc.view;
 
 namespace tray_app_mvc
 {
@@ -16,9 +17,10 @@ namespace tray_app_mvc
         {
             model = new MonitorModel();
             controller = new MonitorUserController(model);
-            configWindow = new Form1(controller);
+            configWindow = new Form1();
 
             model.BrightnessChanged += configWindow.OnMonitorBrightnessChanged;
+            ((IView)configWindow).BrightnessChanged += controller.OnUserChangedBrightness;
 
 
             ToolStripItem button1 = new ToolStripMenuItem("Configuration", null, ShowConfig);
