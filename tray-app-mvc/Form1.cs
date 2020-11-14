@@ -1,83 +1,70 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
-using System.ComponentModel;
-using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Diagnostics;
-
-using tray_app_mcv.View;
-using tray_app_mcv.Model;
-using tray_app_mcv.Controller;
+using tray_app_mvc.controller;
+using tray_app_mvc.model;
 
 namespace tray_app_mvc
 {
-    public partial class Form1 :  Form, IView, IModelObserver
+    public partial class Form1 :  Form
     {
-
-        IMonitorController controller;
-
-        public event ViewHandler<IView> changed;
-
-        public void setController(IController cont)
+        private readonly MonitorUserController controller;
+        
+        public void OnMonitorBrightnessChanged(object? sender, BrightnessChangedEventArgs e)
         {
-            controller = (MonitorController) cont;
+            currentBrightnessLabel.Text = e.Brightness.ToString();
         }
 
-        public void onModelEvent(IModel model, ModelEventArgs e){
-            if(model is MonitorModel){
-                this.currentBrightnessLabel.Text = e.newBrightness.ToString();
-            }
-        }
+        private readonly List<DdcMonitorItem> _monitors = new List<DdcMonitorItem>();
 
-        private List<DdcMonitorItem> monitors = new List<DdcMonitorItem>();
+        private bool _disabled;
 
-        private bool disabled = false;
+        private CancellationTokenSource _tokenSource;
 
-        private CancellationTokenSource tokenSource;
-
-        public Form1()
+        public Form1(MonitorUserController controller)
         {
+            this.controller = controller;
             InitializeComponent();
-            startTasks();
+            StartTasks();
         }
 
         public void Shutdown()
         {
-            tokenSource.Cancel();
+            _tokenSource.Cancel();
         }
 
-        private async void startTasks()
+        private async void StartTasks()
         {
-            tokenSource = new CancellationTokenSource();
+            _tokenSource = new CancellationTokenSource();
             var progress = new Progress<string>(s => currentBrightnessLabel.Text = s);
-            var token = tokenSource.Token;
+            var token = _tokenSource.Token;
             _ = Task.Factory.StartNew(() => LongWork(token, this, progress), TaskCreationOptions.LongRunning);
 
-            await loadMonitors();
+            await LoadMonitors();
         }
 
-        private async Task loadMonitors()
+        private async Task LoadMonitors()
         {
             Task<List<DdcMonitorItem>> monitorsTask = Task.Run(() => MonitorManager.EnumerateMonitors().ToList());
             var monitorList = await monitorsTask;
 
-            this.monitors.Clear();
+            _monitors.Clear();
             foreach (var m in monitorList)
             {
-                this.monitors.Add(m);
+                _monitors.Add(m);
             }
 
-            if (this.monitors.Count > 0)
+            if (_monitors.Count > 0)
             {
                 listBox1.BeginUpdate();
                 listBox1.Items.Clear();
-                foreach (var item in this.monitors)
+                foreach (var item in _monitors)
                 {
                     listBox1.Items.Add(item.Description);
                 }
@@ -87,20 +74,20 @@ namespace tray_app_mvc
 
         private void disableButton_Click(object sender, EventArgs e)
         {
-            disabled = !disabled;
-            this.disableButton.Text = disabled ? "Enable" : "Disable";
+            _disabled = !_disabled;
+            disableButton.Text = _disabled ? "Enable" : "Disable";
         }
 
         private void setBrightnessButton_Click(object sender, EventArgs e)
         {
             try
             {
-                var b = getBrigtnessValue();
-                foreach(var m in this.monitors){
+                var b = GetBrigtnessValue();
+                foreach(var m in _monitors){
                     m.SetBrightness(b);
                 }
 
-                changed.Invoke(this, new ViewEventArgs(b));
+                controller.SetBrightness(b);
             }
             catch
             {
@@ -108,20 +95,18 @@ namespace tray_app_mvc
             }
         }
 
-        private int getBrigtnessValue()
+        private int GetBrigtnessValue()
         {
-            var brightString = this.brightnessTextbox.Text;
+            var brightString = brightnessTextbox.Text;
             var brightness = int.Parse(brightString);
 
             if (brightness >= 0 && brightness <= 100)
             {
                 return brightness;
             }
-            else
-            {
-                Debug.WriteLine("brightness value out of range [0, 100]");
-                throw new Exception("brightness value out of range [0, 100]");
-            }
+
+            Debug.WriteLine("brightness value out of range [0, 100]");
+            throw new Exception("brightness value out of range [0, 100]");
         }
 
 
@@ -129,38 +114,38 @@ namespace tray_app_mvc
         {
             try
             {
-                getBrigtnessValue();
+                GetBrigtnessValue();
 
-                this.brightnessTextbox.ForeColor = SystemColors.ControlText;
-                this.setBrightnessButton.Enabled = true;
+                brightnessTextbox.ForeColor = SystemColors.ControlText;
+                setBrightnessButton.Enabled = true;
             }
             catch
             {
-                this.brightnessTextbox.BackColor = Color.Red;
-                this.setBrightnessButton.Enabled = false;
+                brightnessTextbox.BackColor = Color.Red;
+                setBrightnessButton.Enabled = false;
             }
         }
 
-        public void LongWork(CancellationToken token, Form1 form, IProgress<string> progress)
+        private static void LongWork(CancellationToken token, Form1 form, IProgress<string> progress)
         {
             while (true)
             {
-                if (form.disabled) continue;
+                if (form._disabled) continue;
 
                 if (token.IsCancellationRequested)
                     break;
 
-                if (form.monitors.Count > 0)
+                if (form._monitors.Count > 0)
                 {
-                    foreach (var monitor in form.monitors)
+                    foreach (var monitor in form._monitors)
                     {
                         monitor.UpdateBrightness();
                     }
 
-                    progress.Report(form.monitors[0].Brightness.ToString());
+                    progress.Report(form._monitors[0].Brightness.ToString());
                 }
 
-                Task.Delay(5000).Wait();
+                Task.Delay(5000, token).Wait(token);
             }
         }
     }

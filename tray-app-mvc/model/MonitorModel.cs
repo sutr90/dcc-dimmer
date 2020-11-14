@@ -1,23 +1,29 @@
-using System;
+﻿using System;
 
-namespace tray_app_mcv.Model
+namespace tray_app_mvc.model
 {
-    public class MonitorModel : IMonitorModel
+    public class MonitorModel
     {
-        public event ModelHandler<MonitorModel> changed;
+        private int _currentBrightness = -1;
 
-        private int _brightness;
-
-        public void setBrightness(int newBrightness) 
-        { 
-            _brightness = newBrightness; 
-            changed.Invoke(this, new ModelEventArgs(_brightness));
+        public void SetCurrentBrightness(int currentBrightness)
+        {
+            _currentBrightness = currentBrightness;
+            var args = new BrightnessChangedEventArgs {Brightness = _currentBrightness};
+            OnBrightnessChanged(args);
         }
-
-        public void attach(IModelObserver imo) 
-        { 
-            changed += new ModelHandler<MonitorModel>(imo.onModelEvent);
+        
+        private void OnBrightnessChanged(BrightnessChangedEventArgs e)
+        {
+            var handler = BrightnessChanged;
+            handler?.Invoke(this, e);
         }
+        
+        public event EventHandler<BrightnessChangedEventArgs> BrightnessChanged;
+    }
 
+    public class BrightnessChangedEventArgs : EventArgs
+    {
+        public int Brightness { get; set; }
     }
 }

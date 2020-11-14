@@ -1,11 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Windows.Forms;
-using System.Drawing;
-using tray_app_mcv.View;
-using tray_app_mcv.Model;
-using tray_app_mcv.Controller;
+using tray_app_mvc.controller;
+using tray_app_mvc.model;
 
 namespace tray_app_mvc
 {
@@ -13,20 +9,22 @@ namespace tray_app_mvc
     {
         NotifyIcon notifyIcon = new NotifyIcon();
         Form1 configWindow;
-        MonitorModel mdl;
-        IController cnt;
+        MonitorModel model;
+        MonitorUserController controller;
 
         public DdcApplicationContext()
         {
-            configWindow = new Form1();
-            mdl = new MonitorModel();
-            cnt = new MonitorController(configWindow, mdl);
+            model = new MonitorModel();
+            controller = new MonitorUserController(model);
+            configWindow = new Form1(controller);
+
+            model.BrightnessChanged += configWindow.OnMonitorBrightnessChanged;
 
 
             ToolStripItem button1 = new ToolStripMenuItem("Configuration", null, ShowConfig);
             ToolStripItem button2 = new ToolStripMenuItem("Exit", null, Exit);
 
-            notifyIcon.Icon = tray_app_mvc.Resources.AppIcon;
+            notifyIcon.Icon = Resources.AppIcon;
 
             ContextMenuStrip contextMenuStrip = new ContextMenuStrip();
             contextMenuStrip.Items.Add(button1);
@@ -38,7 +36,7 @@ namespace tray_app_mvc
 
         void ShowConfig(object sender, EventArgs e)
         {
-            // If we are already showing the window meerly focus it.
+            // If we are already showing the window merely focus it.
             if (configWindow.Visible)
                 configWindow.Focus();
             else
