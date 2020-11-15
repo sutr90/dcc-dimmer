@@ -3,19 +3,14 @@ using System.Runtime.InteropServices;
 
 namespace tray_app_mvc
 {
-/// <summary>
-/// Physical monitor controlled by DDC/CI (external monitor)
-/// </summary>
     internal class DdcMonitorItem
     {
         public string DeviceInstanceId { get; }
         public string Description { get; }
         public byte DisplayIndex { get; }
         public byte MonitorIndex { get; }
-        public bool IsReachable { get; }
 
-        public int Brightness { get; protected set; } = -1;
-        public int BrightnessSystemAdjusted { get; protected set; } = -1;
+        public int Brightness { get; private set; } = -1;
         private readonly SafePhysicalMonitorHandle _handle;
 
         public DdcMonitorItem(
@@ -40,24 +35,23 @@ namespace tray_app_mvc
         private uint _minimum; // Raw minimum brightness (not always 0)
         private uint _maximum = 100; // Raw maximum brightness (not always 100)
 
-        public bool UpdateBrightness(int brightness = -1)
+        public void ReadDeviceBrightness()
         {
             var (success, minimum, current, maximum) = MonitorApi.GetBrightness(_handle);
 
             if (!success || !(minimum < maximum) || !(minimum <= current) || !(current <= maximum))
             {
                 Brightness = -1;
-                return false;
+                return;
             }
 
             Brightness = (int) Math.Round((double) (current - minimum) / (maximum - minimum) * 100D,
                 MidpointRounding.AwayFromZero);
             _minimum = minimum;
             _maximum = maximum;
-            return true;
         }
 
-        public bool SetBrightness(int brightness)
+        public bool SetDeviceBrightness(int brightness)
         {
             if ((brightness < 0) || (100 < brightness))
                 throw new ArgumentOutOfRangeException(nameof(brightness), brightness,
@@ -66,13 +60,11 @@ namespace tray_app_mvc
             var buffer = (uint) Math.Round(brightness / 100D * (_maximum - _minimum) + _minimum,
                 MidpointRounding.AwayFromZero);
 
-            if (MonitorApi.SetBrightness(_handle, buffer))
-            {
-                Brightness = brightness;
-                return true;
-            }
+            if (!MonitorApi.SetBrightness(_handle, buffer)) return false;
+            
+            Brightness = brightness;
+            return true;
 
-            return false;
         }
 
         #region IDisposable

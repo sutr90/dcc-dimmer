@@ -82,7 +82,7 @@ namespace tray_app_mvc
             {
                 var b = GetBrigtnessValue();
                 foreach(var m in _monitors){
-                    m.SetBrightness(b);
+                    m.SetDeviceBrightness(b);
                 }
 
                 var args = new IView.ViewBrightnessChangedEventArgs {Brightness = b};
@@ -145,7 +145,7 @@ namespace tray_app_mvc
                 {
                     foreach (var monitor in form._monitors)
                     {
-                        monitor.UpdateBrightness();
+                        monitor.ReadDeviceBrightness();
                     }
 
                     progress.Report(form._monitors[0].Brightness.ToString());
