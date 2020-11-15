@@ -86,7 +86,7 @@ namespace tray_app_mvc
                 }
 
                 var args = new IView.ViewBrightnessChangedEventArgs {Brightness = b};
-                OnBrightnessChanged(args);
+                DispatchBrightnessChanged(args);
             }
             catch
             {
@@ -94,7 +94,7 @@ namespace tray_app_mvc
             }
         }
         
-        private void OnBrightnessChanged(IView.ViewBrightnessChangedEventArgs e)
+        private void DispatchBrightnessChanged(IView.ViewBrightnessChangedEventArgs e)
         {
             Debug.Print("view raise ViewBrightnessChangedEventArgs");
             var handler = BrightnessChanged;

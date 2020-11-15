@@ -11,10 +11,10 @@ namespace tray_app_mvc.model
         {
             _currentBrightness = currentBrightness;
             var args = new ModelBrightnessChangedEventArgs {Brightness = _currentBrightness};
-            OnBrightnessChanged(args);
+            DispatchBrightnessChanged(args);
         }
         
-        private void OnBrightnessChanged(ModelBrightnessChangedEventArgs e)
+        private void DispatchBrightnessChanged(ModelBrightnessChangedEventArgs e)
         {
             var handler = BrightnessChanged;
             Debug.Print("model raise ModelBrightnessChangedEventArgs");
