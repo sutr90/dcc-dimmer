@@ -8,11 +8,11 @@ namespace tray_app_mvc.model
     {
         private int _currentBrightness = -1;
 
-        private List<DdcMonitorItem> _displayList;
+        public List<DdcMonitorItem> DisplayList { get; private set; }
 
         public MonitorModel()
         {
-            _displayList = new List<DdcMonitorItem>();
+            DisplayList = new List<DdcMonitorItem>();
         }
 
         public void SetCurrentBrightness(int currentBrightness)
@@ -24,8 +24,8 @@ namespace tray_app_mvc.model
 
         public void SetDisplayList(List<DdcMonitorItem> displayList)
         {
-            _displayList = displayList;
-            var args = new DisplayListChangedEventArgs {DisplayList = _displayList};
+            DisplayList = displayList;
+            var args = new DisplayListChangedEventArgs {DisplayList = DisplayList};
             DispatchDisplayListChanged(args);
         }
 

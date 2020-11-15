@@ -23,25 +23,10 @@ namespace tray_app_mvc
 
         private bool _disabled;
 
-        private CancellationTokenSource? _tokenSource;
 
         public Form1()
         {
             InitializeComponent();
-            StartTasks();
-        }
-
-        public void Shutdown()
-        {
-            _tokenSource?.Cancel();
-        }
-
-        private void StartTasks()
-        {
-            _tokenSource = new CancellationTokenSource();
-            var progress = new Progress<string>(s => currentBrightnessLabel.Text = s);
-            var token = _tokenSource.Token;
-            _ = Task.Factory.StartNew(() => LongWork(token, this, progress), TaskCreationOptions.LongRunning);
         }
 
         private void disableButton_Click(object sender, EventArgs e)
@@ -104,29 +89,6 @@ namespace tray_app_mvc
             {
                 brightnessTextbox.BackColor = Color.Red;
                 setBrightnessButton.Enabled = false;
-            }
-        }
-
-        private static void LongWork(CancellationToken token, Form1 form, IProgress<string> progress)
-        {
-            while (true)
-            {
-                if (form._disabled) continue;
-
-                if (token.IsCancellationRequested)
-                    break;
-
-                if (form._monitors.Count > 0)
-                {
-                    foreach (var monitor in form._monitors)
-                    {
-                        monitor.ReadDeviceBrightness();
-                    }
-
-                    progress.Report(form._monitors[0].Brightness.ToString());
-                }
-
-                Task.Delay(5000, token).Wait(token);
             }
         }
 

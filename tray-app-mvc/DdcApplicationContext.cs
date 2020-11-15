@@ -60,7 +60,7 @@ namespace tray_app_mvc
 
         private void Exit(object sender, EventArgs e)
         {
-            ConfigWindow.Shutdown();
+            // TODO: ConfigWindow.Shutdown();
             _notifyIcon.Visible = false;
             Application.Exit();
         }
