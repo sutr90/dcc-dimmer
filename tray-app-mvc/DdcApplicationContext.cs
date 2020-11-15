@@ -45,7 +45,7 @@ namespace tray_app_mvc
             _notifyIcon.Visible = true;
             
             
-            // monitorDisplayController.OnRefreshDisplayList();
+            monitorDisplayController.OnRefreshDisplayList();
         }
 
         

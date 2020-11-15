@@ -22,6 +22,11 @@ namespace tray_app_mvc.controller
         public void OnUserChangedBrightness(IView.ViewBrightnessChangedEventArgs e)
         {
             Debug.Print("display recv ViewBrightnessChangedEventArgs");
+            
+            foreach (var m in _model.DisplayList)
+            {
+                m.SetDeviceBrightness(e.Brightness);
+            }
         }
 
         public async void OnRefreshDisplayList()

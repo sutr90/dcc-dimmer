@@ -17,10 +17,7 @@ namespace tray_app_mvc
             currentBrightnessLabel.Text = e.Brightness.ToString();
         }
 
-        private readonly List<DdcMonitorItem> _monitors = new List<DdcMonitorItem>();
-
         private bool _disabled;
-
 
         public Form1()
         {
@@ -35,21 +32,9 @@ namespace tray_app_mvc
 
         private void setBrightnessButton_Click(object sender, EventArgs e)
         {
-            try
-            {
-                var b = GetBrigtnessValue();
-                foreach (var m in _monitors)
-                {
-                    m.SetDeviceBrightness(b);
-                }
-
-                var args = new IView.ViewBrightnessChangedEventArgs {Brightness = b};
-                DispatchBrightnessChanged(args);
-            }
-            catch
-            {
-                Debug.WriteLine("Failed to set brigthness");
-            }
+            var b = GetBrightnessValue();
+            var args = new IView.ViewBrightnessChangedEventArgs {Brightness = b};
+            DispatchBrightnessChanged(args);
         }
 
         private void DispatchBrightnessChanged(IView.ViewBrightnessChangedEventArgs e)
@@ -59,18 +44,18 @@ namespace tray_app_mvc
             handler.Invoke(e);
         }
 
-        private int GetBrigtnessValue()
+        private int GetBrightnessValue()
         {
-            var brightString = brightnessTextbox.Text;
-            var brightness = int.Parse(brightString);
-
-            if (brightness >= 0 && brightness <= 100)
+            if (int.TryParse(brightnessTextbox.Text, out var brightness))
             {
-                return brightness;
+                if (brightness >= 0 && brightness <= 100)
+                {
+                    return brightness;
+                }
             }
 
-            Debug.WriteLine("brightness value out of range [0, 100]");
-            throw new Exception("brightness value out of range [0, 100]");
+            Debug.WriteLine("Incorrect brightness value {0}", brightnessTextbox.Text);
+            throw new Exception("Incorrect brightness value");
         }
 
 
@@ -78,7 +63,7 @@ namespace tray_app_mvc
         {
             try
             {
-                GetBrigtnessValue();
+                GetBrightnessValue();
 
                 brightnessTextbox.ForeColor = SystemColors.ControlText;
                 setBrightnessButton.Enabled = true;
