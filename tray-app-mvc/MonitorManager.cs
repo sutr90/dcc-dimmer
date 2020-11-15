@@ -4,47 +4,48 @@ using System.Linq;
 
 namespace tray_app_mvc
 {
-class MonitorManager
-{
-    public static IEnumerable<DdcMonitorItem> EnumerateMonitors()
+    internal static class MonitorManager
     {
-        var deviceItems = DeviceContext.EnumerateMonitorDevices().ToList();
-
-        if (!(deviceItems?.Any() == true))
-            yield break;
-
-        // Obtained by DDC/CI
-        foreach (var handleItem in DeviceContext.GetMonitorHandles())
+        public static IEnumerable<DdcMonitorItem> EnumerateMonitors()
         {
-            foreach (var physicalItem in MonitorApi.EnumeratePhysicalMonitors(handleItem.MonitorHandle))
+            var deviceItems = DeviceContext.EnumerateMonitorDevices().ToList();
+
+            if (deviceItems.Any() != true)
+                yield break;
+
+            // Obtained by DDC/CI
+            foreach (var handleItem in DeviceContext.GetMonitorHandles())
             {
-                int index = -1;
-                if (physicalItem.IsSupported)
+                foreach (var physicalItem in MonitorApi.EnumeratePhysicalMonitors(handleItem.MonitorHandle))
                 {
-                    index = deviceItems.FindIndex(x =>
-                        (x.DisplayIndex == handleItem.DisplayIndex) &&
-                        (x.MonitorIndex == physicalItem.MonitorIndex) &&
-                        string.Equals(x.Description, physicalItem.Description, StringComparison.OrdinalIgnoreCase));
-                }
-                if (index < 0)
-                {
-                    physicalItem.Handle.Dispose();
-                    continue;
-                }
+                    var index = -1;
+                    if (physicalItem.IsSupported)
+                    {
+                        index = deviceItems.FindIndex(x =>
+                            x.DisplayIndex == handleItem.DisplayIndex &&
+                            x.MonitorIndex == physicalItem.MonitorIndex &&
+                            string.Equals(x.Description, physicalItem.Description, StringComparison.OrdinalIgnoreCase));
+                    }
 
-                var deviceItem = deviceItems[index];
-                yield return new DdcMonitorItem(
-                    deviceInstanceId: deviceItem.DeviceInstanceId,
-                    description: deviceItem.Description,
-                    displayIndex: deviceItem.DisplayIndex,
-                    monitorIndex: deviceItem.MonitorIndex,
-                    handle: physicalItem.Handle);
+                    if (index < 0)
+                    {
+                        physicalItem.Handle.Dispose();
+                        continue;
+                    }
 
-                deviceItems.RemoveAt(index);
-                if (deviceItems.Count == 0)
-                    yield break;
+                    var deviceItem = deviceItems[index];
+                    yield return new DdcMonitorItem(
+                        deviceItem.DeviceInstanceId,
+                        deviceItem.Description,
+                        deviceItem.DisplayIndex,
+                        deviceItem.MonitorIndex,
+                        physicalItem.Handle);
+
+                    deviceItems.RemoveAt(index);
+                    if (deviceItems.Count == 0)
+                        yield break;
+                }
             }
         }
     }
-}
 }
