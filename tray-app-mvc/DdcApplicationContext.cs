@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
 using tray_app_mvc.controller;
 using tray_app_mvc.model;
@@ -8,47 +9,51 @@ namespace tray_app_mvc
 {
     public class DdcApplicationContext : ApplicationContext
     {
-        NotifyIcon notifyIcon = new NotifyIcon();
-        Form1 configWindow;
-        MonitorModel model;
-        MonitorUserController controller;
+        private Form1 ConfigWindow { get; }
+        
+        private readonly NotifyIcon _notifyIcon = new NotifyIcon();
+
+        private readonly List<IMonitorController> _monitorControllers = new  List<IMonitorController>();
 
         public DdcApplicationContext()
         {
-            model = new MonitorModel();
-            controller = new MonitorUserController(model);
-            configWindow = new Form1();
-
-            model.BrightnessChanged += configWindow.OnMonitorBrightnessChanged;
-            ((IView)configWindow).BrightnessChanged += controller.OnUserChangedBrightness;
-
+            ConfigWindow = new Form1();
+            var model = new MonitorModel();
+            model.BrightnessChanged += ConfigWindow.OnMonitorBrightnessChanged;
+            _monitorControllers.Add(new MonitorDisplayController(model));
+            _monitorControllers.Add(new MonitorUserController(model));
+            foreach (var controller in _monitorControllers)
+            {
+                ((IView)ConfigWindow).BrightnessChanged += controller.OnUserChangedBrightness;
+            }
 
             ToolStripItem button1 = new ToolStripMenuItem("Configuration", null, ShowConfig);
             ToolStripItem button2 = new ToolStripMenuItem("Exit", null, Exit);
 
-            notifyIcon.Icon = Resources.AppIcon;
+            _notifyIcon.Icon = Resources.AppIcon;
 
-            ContextMenuStrip contextMenuStrip = new ContextMenuStrip();
+            var contextMenuStrip = new ContextMenuStrip();
             contextMenuStrip.Items.Add(button1);
             contextMenuStrip.Items.Add(button2);
 
-            notifyIcon.ContextMenuStrip = contextMenuStrip;
-            notifyIcon.Visible = true;
+            _notifyIcon.ContextMenuStrip = contextMenuStrip;
+            _notifyIcon.Visible = true;
         }
 
-        void ShowConfig(object sender, EventArgs e)
+        
+        private void ShowConfig(object sender, EventArgs e)
         {
             // If we are already showing the window merely focus it.
-            if (configWindow.Visible)
-                configWindow.Focus();
+            if (ConfigWindow.Visible)
+                ConfigWindow.Focus();
             else
-                configWindow.ShowDialog();
+                ConfigWindow.ShowDialog();
         }
 
-        void Exit(object sender, EventArgs e)
+        private void Exit(object sender, EventArgs e)
         {
-            configWindow.Shutdown();
-            notifyIcon.Visible = false;
+            ConfigWindow.Shutdown();
+            _notifyIcon.Visible = false;
             Application.Exit();
         }
     }

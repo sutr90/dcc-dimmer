@@ -4,7 +4,7 @@ using tray_app_mvc.view;
 
 namespace tray_app_mvc.controller
 {
-    public class MonitorUserController
+    public class MonitorUserController : IMonitorController
     {
         private readonly MonitorModel _model;
 
@@ -13,12 +13,12 @@ namespace tray_app_mvc.controller
             _model = model;
         }
 
-        public void SetBrightness(int brightness)
+        private void SetBrightness(int brightness)
         {
-            _model?.SetCurrentBrightness(brightness);
+            _model.SetCurrentBrightness(brightness);
         }
 
-        public void OnUserChangedBrightness(object? sender, IView.ViewBrightnessChangedEventArgs e)
+        public void OnUserChangedBrightness(object sender, IView.ViewBrightnessChangedEventArgs e)
         {
             Debug.Print("ctl recv ViewBrightnessChangedEventArgs");
             SetBrightness(e.Brightness);
