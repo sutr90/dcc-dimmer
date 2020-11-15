@@ -6,9 +6,8 @@ namespace tray_app_mvc.model
 {
     public class MonitorModel
     {
-        private int _currentBrightness = -1;
-
         public List<DdcMonitorItem> DisplayList { get; private set; }
+        public int CurrentBrightness { get; private set; }
 
         public MonitorModel()
         {
@@ -17,8 +16,8 @@ namespace tray_app_mvc.model
 
         public void SetCurrentBrightness(int currentBrightness)
         {
-            _currentBrightness = currentBrightness;
-            var args = new ModelBrightnessChangedEventArgs {Brightness = _currentBrightness};
+            CurrentBrightness = currentBrightness;
+            var args = new ModelBrightnessChangedEventArgs {Brightness = CurrentBrightness};
             DispatchBrightnessChanged(args);
         }
 

@@ -21,6 +21,9 @@ namespace tray_app_mvc.controller
         public void OnUserChangedBrightness(ViewBrightnessChangedEventArgs e)
         {
             Debug.Print("display recv ViewBrightnessChangedEventArgs");
+
+
+            if (_model.CurrentBrightness == e.Brightness) return;
             
             foreach (var m in _model.DisplayList)
             {
@@ -35,19 +38,18 @@ namespace tray_app_mvc.controller
 
         private void LaunchBrightnessWatchTask(CancellationToken cancellationToken)
         {
-            
             var progress = new Progress<string>(s =>
             {
                 Debug.Print("Watch Task Progress {0}", s);
-                
+
                 if (int.TryParse(s, out var newBrightness))
                 {
                     _model.SetCurrentBrightness(newBrightness);
                 }
             });
-            
+
             Debug.Print("Watch Task Started");
-            
+
             Task.Factory.StartNew(() => LongWork(cancellationToken, progress), TaskCreationOptions.LongRunning);
         }
 
@@ -72,7 +74,7 @@ namespace tray_app_mvc.controller
                     // TODO: tady to chce zmenit logiku, aby to bralo v potaz vybrany monitor a ne vzdy prvni
                     progress.Report(modelDisplayList[0].Brightness.ToString());
                 }
-                
+
                 Task.Delay(5000, token).Wait(token);
             }
         }
