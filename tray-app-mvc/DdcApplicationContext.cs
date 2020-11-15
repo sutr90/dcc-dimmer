@@ -17,19 +17,25 @@ namespace tray_app_mvc
         public DdcApplicationContext()
         {
             ConfigWindow = new Form1();
-            var model = new MonitorModel();
-            model.BrightnessChanged += ConfigWindow.OnMonitorBrightnessChanged;
-            model.DisplayListChanged += ConfigWindow.OnDisplayListChanged;
-            var monitorDisplayController = new MonitorDisplayController(model);
+            var monitorModel = new MonitorModel();
+            monitorModel.BrightnessChanged += ConfigWindow.OnMonitorBrightnessChanged;
+            monitorModel.DisplayListChanged += ConfigWindow.OnDisplayListChanged;
+            var monitorDisplayController = new MonitorDisplayController(monitorModel);
             
             _monitorControllers.Add(monitorDisplayController);
-            _monitorControllers.Add(new MonitorUserController(model));
+            _monitorControllers.Add(new MonitorUserController(monitorModel));
             foreach (var controller in _monitorControllers)
             {
                 ConfigWindow.BrightnessChanged += controller.OnUserChangedBrightness;
             }
-
+            
             ConfigWindow.RefreshDisplayList += monitorDisplayController.OnRefreshDisplayList;
+
+            var sensorModel = new SensorModel();
+            var sensorController = new SensorController(sensorModel);
+
+            sensorModel.SensorValueChanged += ConfigWindow.OnSensorValueChanged;
+            sensorModel.DeviceListChanged += sensorController.OnDeviceListChanged;
 
             ToolStripItem button1 = new ToolStripMenuItem("Configuration", null, ShowConfig);
             ToolStripItem button2 = new ToolStripMenuItem("Exit", null, Exit);
@@ -45,6 +51,7 @@ namespace tray_app_mvc
             
             
             monitorDisplayController.OnRefreshDisplayList();
+            sensorController.OnDeviceListChanged();
         }
 
         

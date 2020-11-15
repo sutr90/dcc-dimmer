@@ -14,7 +14,7 @@ namespace tray_app_mvc.controller
         public MonitorDisplayController(MonitorModel model)
         {
             _model = model;
-            var displayWatchTokenSource = new CancellationTokenSource();
+            var displayWatchTokenSource = new CancellationTokenSource(); // todo move to application context, to kill all tasks at once
             LaunchBrightnessWatchTask(displayWatchTokenSource.Token);
         }
 
@@ -50,10 +50,10 @@ namespace tray_app_mvc.controller
 
             Debug.Print("Watch Task Started");
 
-            Task.Factory.StartNew(() => LongWork(cancellationToken, progress), TaskCreationOptions.LongRunning);
+            Task.Factory.StartNew(() => WatchDisplayBrightness(cancellationToken, progress), TaskCreationOptions.LongRunning);
         }
 
-        private void LongWork(CancellationToken token, IProgress<string> progress)
+        private void WatchDisplayBrightness(CancellationToken token, IProgress<string> progress)
         {
             while (true)
             {

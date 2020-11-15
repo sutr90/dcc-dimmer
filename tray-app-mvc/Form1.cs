@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.Windows.Forms;
 using tray_app_mvc.model;
 
@@ -31,10 +32,10 @@ namespace tray_app_mvc
         {
             var b = GetBrightnessValue();
             var args = new ViewBrightnessChangedEventArgs {Brightness = b};
-            DispatchBrightnessChanged(args);
+            RaiseBrightnessChanged(args);
         }
 
-        private void DispatchBrightnessChanged(ViewBrightnessChangedEventArgs e)
+        private void RaiseBrightnessChanged(ViewBrightnessChangedEventArgs e)
         {
             Debug.Print("view raise ViewBrightnessChangedEventArgs");
             var handler = BrightnessChanged;
@@ -90,6 +91,13 @@ namespace tray_app_mvc
         private void refreshButton_Click(object? sender, EventArgs e)
         {
             RefreshDisplayList?.Invoke();
+        }
+
+        public void OnSensorValueChanged(SensorValueChangedEventArgs e)
+        {
+            var luxValue = (int) e.Value;
+
+            sensorValueLabel.Text = luxValue.ToString();
         }
     }
     
