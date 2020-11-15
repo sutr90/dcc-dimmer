@@ -3,8 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using tray_app_mvc.model;
 using tray_app_mvc.view;
