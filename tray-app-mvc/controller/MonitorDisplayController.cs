@@ -23,7 +23,7 @@ namespace tray_app_mvc.controller
             Debug.Print("display recv ViewBrightnessChangedEventArgs");
 
 
-            if (_model.CurrentBrightness == e.Brightness) return;
+            if (_model.Brightness == e.Brightness) return;
             
             foreach (var m in _model.DisplayList)
             {
@@ -44,7 +44,7 @@ namespace tray_app_mvc.controller
 
                 if (int.TryParse(s, out var newBrightness))
                 {
-                    _model.SetCurrentBrightness(newBrightness);
+                    _model.SetBrightness(newBrightness);
                 }
             });
 

@@ -14,7 +14,7 @@ namespace tray_app_mvc.controller
 
         private void SetBrightness(int brightness)
         {
-            _model.SetCurrentBrightness(brightness);
+            _model.SetBrightness(brightness);
         }
 
         public void OnUserChangedBrightness(ViewBrightnessChangedEventArgs e)
