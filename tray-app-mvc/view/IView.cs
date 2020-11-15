@@ -9,6 +9,6 @@ namespace tray_app_mvc.view
             public int Brightness { get; set; }
         }
 
-        public event EventHandler<ViewBrightnessChangedEventArgs> BrightnessChanged;
+        public event Action<ViewBrightnessChangedEventArgs> BrightnessChanged;
     }
 }

@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace tray_app_mvc
 {
-    internal class DdcMonitorItem
+    public class DdcMonitorItem
     {
         public string DeviceInstanceId { get; }
         public string Description { get; }
@@ -95,7 +95,7 @@ namespace tray_app_mvc
         }
     }
 
-    internal class SafePhysicalMonitorHandle : SafeHandle
+    public class SafePhysicalMonitorHandle : SafeHandle
     {
         public SafePhysicalMonitorHandle(IntPtr handle) : base(IntPtr.Zero, true)
         {

@@ -20,12 +20,17 @@ namespace tray_app_mvc
             ConfigWindow = new Form1();
             var model = new MonitorModel();
             model.BrightnessChanged += ConfigWindow.OnMonitorBrightnessChanged;
-            _monitorControllers.Add(new MonitorDisplayController(model));
+            model.DisplayListChanged += ConfigWindow.OnDisplayListChanged;
+            var monitorDisplayController = new MonitorDisplayController(model);
+            
+            _monitorControllers.Add(monitorDisplayController);
             _monitorControllers.Add(new MonitorUserController(model));
             foreach (var controller in _monitorControllers)
             {
                 ((IView)ConfigWindow).BrightnessChanged += controller.OnUserChangedBrightness;
             }
+
+            ConfigWindow.RefreshDisplayList += monitorDisplayController.OnRefreshDisplayList;
 
             ToolStripItem button1 = new ToolStripMenuItem("Configuration", null, ShowConfig);
             ToolStripItem button2 = new ToolStripMenuItem("Exit", null, Exit);
@@ -38,6 +43,9 @@ namespace tray_app_mvc
 
             _notifyIcon.ContextMenuStrip = contextMenuStrip;
             _notifyIcon.Visible = true;
+            
+            
+            // monitorDisplayController.OnRefreshDisplayList();
         }
 
         

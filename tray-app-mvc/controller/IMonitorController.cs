@@ -4,6 +4,6 @@ namespace tray_app_mvc.controller
 {
     public interface IMonitorController
     {
-        public void OnUserChangedBrightness(object sender, IView.ViewBrightnessChangedEventArgs e);
+        public void OnUserChangedBrightness(IView.ViewBrightnessChangedEventArgs viewBrightnessChangedEventArgs);
     }
 }

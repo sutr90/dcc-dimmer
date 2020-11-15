@@ -35,8 +35,9 @@
             this.sensorValueLabel = new System.Windows.Forms.Label();
             this.setBrightnessButton = new System.Windows.Forms.Button();
             this.disableButton = new System.Windows.Forms.Button();
-            this.SuspendLayout();
+            this.refreshDisplayListButton = new System.Windows.Forms.Button();
             this.label6 = new System.Windows.Forms.Label();
+            this.SuspendLayout();
             // 
             // label1
             // 
@@ -106,6 +107,16 @@
             this.disableButton.Text = "Disable";
             this.disableButton.UseVisualStyleBackColor = true;
             this.disableButton.Click += new System.EventHandler(this.disableButton_Click);
+            // 
+            // button4
+            // 
+            this.refreshDisplayListButton.Location = new System.Drawing.Point(12, 206);
+            this.refreshDisplayListButton.Name = "disableButton";
+            this.refreshDisplayListButton.Size = new System.Drawing.Size(217, 23);
+            this.refreshDisplayListButton.TabIndex = 5;
+            this.refreshDisplayListButton.Text = "Refresh display list";
+            this.refreshDisplayListButton.UseVisualStyleBackColor = true;
+            this.refreshDisplayListButton.Click += new System.EventHandler(this.refreshButton_Click);
 
             // 
             // label6
@@ -132,8 +143,9 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(240, 210);
+            this.ClientSize = new System.Drawing.Size(240, 242);
             this.Controls.Add(this.disableButton);
+            this.Controls.Add(this.refreshDisplayListButton);
             this.Controls.Add(this.setBrightnessButton);
             this.Controls.Add(this.sensorValueLabel);
             this.Controls.Add(this.brightnessTextbox);
@@ -161,6 +173,7 @@
         private System.Windows.Forms.Button setBrightnessButton;
         private System.Windows.Forms.Button disableButton;
         private System.Windows.Forms.ListBox listBox1;
+        private System.Windows.Forms.Button refreshDisplayListButton;
 
     }
 }

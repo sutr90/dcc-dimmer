@@ -18,7 +18,7 @@ namespace tray_app_mvc.controller
             _model.SetCurrentBrightness(brightness);
         }
 
-        public void OnUserChangedBrightness(object sender, IView.ViewBrightnessChangedEventArgs e)
+        public void OnUserChangedBrightness(IView.ViewBrightnessChangedEventArgs e)
         {
             Debug.Print("ctl recv ViewBrightnessChangedEventArgs");
             SetBrightness(e.Brightness);

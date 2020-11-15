@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -12,9 +11,9 @@ using tray_app_mvc.view;
 
 namespace tray_app_mvc
 {
-    public partial class Form1 :  Form, IView
+    public partial class Form1 : Form, IView
     {
-        public void OnMonitorBrightnessChanged(object? sender, ModelBrightnessChangedEventArgs e)
+        public void OnMonitorBrightnessChanged(ModelBrightnessChangedEventArgs e)
         {
             Debug.Print("view recv ModelBrightnessChangedEventArgs");
             currentBrightnessLabel.Text = e.Brightness.ToString();
@@ -24,7 +23,7 @@ namespace tray_app_mvc
 
         private bool _disabled;
 
-        private CancellationTokenSource _tokenSource;
+        private CancellationTokenSource? _tokenSource;
 
         public Form1()
         {
@@ -34,40 +33,15 @@ namespace tray_app_mvc
 
         public void Shutdown()
         {
-            _tokenSource.Cancel();
+            _tokenSource?.Cancel();
         }
 
-        private async void StartTasks()
+        private void StartTasks()
         {
             _tokenSource = new CancellationTokenSource();
             var progress = new Progress<string>(s => currentBrightnessLabel.Text = s);
             var token = _tokenSource.Token;
             _ = Task.Factory.StartNew(() => LongWork(token, this, progress), TaskCreationOptions.LongRunning);
-
-            await LoadMonitors();
-        }
-
-        private async Task LoadMonitors()
-        {
-            Task<List<DdcMonitorItem>> monitorsTask = Task.Run(() => MonitorManager.EnumerateMonitors().ToList());
-            var monitorList = await monitorsTask;
-
-            _monitors.Clear();
-            foreach (var m in monitorList)
-            {
-                _monitors.Add(m);
-            }
-
-            if (_monitors.Count > 0)
-            {
-                listBox1.BeginUpdate();
-                listBox1.Items.Clear();
-                foreach (var item in _monitors)
-                {
-                    listBox1.Items.Add(item.Description);
-                }
-                listBox1.EndUpdate();
-            }
         }
 
         private void disableButton_Click(object sender, EventArgs e)
@@ -81,7 +55,8 @@ namespace tray_app_mvc
             try
             {
                 var b = GetBrigtnessValue();
-                foreach(var m in _monitors){
+                foreach (var m in _monitors)
+                {
                     m.SetDeviceBrightness(b);
                 }
 
@@ -93,12 +68,12 @@ namespace tray_app_mvc
                 Debug.WriteLine("Failed to set brigthness");
             }
         }
-        
+
         private void DispatchBrightnessChanged(IView.ViewBrightnessChangedEventArgs e)
         {
             Debug.Print("view raise ViewBrightnessChangedEventArgs");
             var handler = BrightnessChanged;
-            handler.Invoke(this, e);
+            handler.Invoke(e);
         }
 
         private int GetBrigtnessValue()
@@ -155,6 +130,24 @@ namespace tray_app_mvc
             }
         }
 
-        public event EventHandler<IView.ViewBrightnessChangedEventArgs> BrightnessChanged;
+        public event Action<IView.ViewBrightnessChangedEventArgs> BrightnessChanged;
+        public event Action RefreshDisplayList;
+
+        public void OnDisplayListChanged(DisplayListChangedEventArgs evt)
+        {
+            listBox1.BeginUpdate();
+            listBox1.Items.Clear();
+            foreach (var item in evt.DisplayList)
+            {
+                listBox1.Items.Add(item.Description);
+            }
+
+            listBox1.EndUpdate();
+        }
+
+        private void refreshButton_Click(object? sender, EventArgs e)
+        {
+            RefreshDisplayList.Invoke();
+        }
     }
 }
