@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using tray_app_mvc.model;
-using tray_app_mvc.view;
 
 namespace tray_app_mvc.controller
 {
@@ -18,7 +17,7 @@ namespace tray_app_mvc.controller
             _model.SetCurrentBrightness(brightness);
         }
 
-        public void OnUserChangedBrightness(IView.ViewBrightnessChangedEventArgs e)
+        public void OnUserChangedBrightness(ViewBrightnessChangedEventArgs e)
         {
             Debug.Print("ctl recv ViewBrightnessChangedEventArgs");
             SetBrightness(e.Brightness);

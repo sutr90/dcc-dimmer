@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using tray_app_mvc.controller;
 using tray_app_mvc.model;
-using tray_app_mvc.view;
 
 namespace tray_app_mvc
 {
@@ -27,7 +26,7 @@ namespace tray_app_mvc
             _monitorControllers.Add(new MonitorUserController(model));
             foreach (var controller in _monitorControllers)
             {
-                ((IView)ConfigWindow).BrightnessChanged += controller.OnUserChangedBrightness;
+                ConfigWindow.BrightnessChanged += controller.OnUserChangedBrightness;
             }
 
             ConfigWindow.RefreshDisplayList += monitorDisplayController.OnRefreshDisplayList;

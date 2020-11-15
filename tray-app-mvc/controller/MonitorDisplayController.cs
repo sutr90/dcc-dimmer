@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using tray_app_mvc.model;
-using tray_app_mvc.view;
 
 namespace tray_app_mvc.controller
 {
@@ -19,7 +18,7 @@ namespace tray_app_mvc.controller
             LaunchBrightnessWatchTask(displayWatchTokenSource.Token);
         }
 
-        public void OnUserChangedBrightness(IView.ViewBrightnessChangedEventArgs e)
+        public void OnUserChangedBrightness(ViewBrightnessChangedEventArgs e)
         {
             Debug.Print("display recv ViewBrightnessChangedEventArgs");
             

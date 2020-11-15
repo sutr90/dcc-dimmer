@@ -1,15 +1,12 @@
-﻿#nullable enable
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 using tray_app_mvc.model;
-using tray_app_mvc.view;
 
 namespace tray_app_mvc
 {
-    public partial class Form1 : Form, IView
+    public partial class Form1 : Form
     {
         public void OnMonitorBrightnessChanged(ModelBrightnessChangedEventArgs e)
         {
@@ -33,15 +30,15 @@ namespace tray_app_mvc
         private void setBrightnessButton_Click(object sender, EventArgs e)
         {
             var b = GetBrightnessValue();
-            var args = new IView.ViewBrightnessChangedEventArgs {Brightness = b};
+            var args = new ViewBrightnessChangedEventArgs {Brightness = b};
             DispatchBrightnessChanged(args);
         }
 
-        private void DispatchBrightnessChanged(IView.ViewBrightnessChangedEventArgs e)
+        private void DispatchBrightnessChanged(ViewBrightnessChangedEventArgs e)
         {
             Debug.Print("view raise ViewBrightnessChangedEventArgs");
             var handler = BrightnessChanged;
-            handler.Invoke(e);
+            handler?.Invoke(e);
         }
 
         private int GetBrightnessValue()
@@ -75,7 +72,7 @@ namespace tray_app_mvc
             }
         }
 
-        public event Action<IView.ViewBrightnessChangedEventArgs> BrightnessChanged;
+        public event Action<ViewBrightnessChangedEventArgs> BrightnessChanged;
         public event Action RefreshDisplayList;
 
         public void OnDisplayListChanged(DisplayListChangedEventArgs evt)
@@ -92,7 +89,13 @@ namespace tray_app_mvc
 
         private void refreshButton_Click(object? sender, EventArgs e)
         {
-            RefreshDisplayList.Invoke();
+            RefreshDisplayList?.Invoke();
         }
     }
+    
+    public class ViewBrightnessChangedEventArgs : EventArgs
+    {
+        public int Brightness { get; set; }
+    }
+
 }
