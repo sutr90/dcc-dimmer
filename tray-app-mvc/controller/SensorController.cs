@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 using HidSharp;
 using HidSharp.Reports.Input;
+using HidSharp.Utility;
 using tray_app_mvc.model;
 
 namespace tray_app_mvc.controller
@@ -15,6 +17,8 @@ namespace tray_app_mvc.controller
         {
             _model = model;
             DeviceList.Local.Changed += (sender, args) => _model.SetDeviceList();
+            HidSharpDiagnostics.EnableTracing = true;
+            HidSharpDiagnostics.PerformStrictChecks = true;
         }
 
         public void OnDeviceListChanged()
@@ -30,7 +34,7 @@ namespace tray_app_mvc.controller
             else
             {
                 Debug.Print("selected new device");
-                OpenDevice(modelSensorList[0]);
+                Task.Factory.StartNew(() => OpenDevice(modelSensorList[0]), TaskCreationOptions.LongRunning);
             }
         }
 
@@ -68,8 +72,10 @@ namespace tray_app_mvc.controller
                         };
 
                         inputReceiver.Stopped += (sender, args) => { _model.SetValue(-1); };
+                        inputReceiver.Started += (sender, args) => { Debug.Print("Started receiving"); };
 
                         inputReceiver.Start(hidStream);
+
                     }
                 }
                 else
@@ -94,7 +100,9 @@ namespace tray_app_mvc.controller
 
             var exp = (dataValue & exponentMask) >> 12;
             var mantissa = dataValue & mantissaMask;
-            _model.SetValue(0.01 * Math.Pow(2, exp) * mantissa);
+            var lux = 0.01 * Math.Pow(2, exp) * mantissa;
+
+            _model.SetValue(lux);
         }
     }
 }

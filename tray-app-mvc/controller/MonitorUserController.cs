@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using tray_app_mvc.model;
+﻿using tray_app_mvc.model;
 
 namespace tray_app_mvc.controller
 {
@@ -19,7 +18,6 @@ namespace tray_app_mvc.controller
 
         public void OnUserChangedBrightness(ViewBrightnessChangedEventArgs e)
         {
-            Debug.Print("ctl recv ViewBrightnessChangedEventArgs");
             SetBrightness(e.Brightness);
         }
     }

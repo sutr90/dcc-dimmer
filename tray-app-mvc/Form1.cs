@@ -11,7 +11,6 @@ namespace tray_app_mvc
     {
         public void OnMonitorBrightnessChanged(ModelBrightnessChangedEventArgs e)
         {
-            Debug.Print("view recv ModelBrightnessChangedEventArgs");
             currentBrightnessLabel.Text = e.Brightness.ToString();
         }
 
@@ -37,7 +36,6 @@ namespace tray_app_mvc
 
         private void RaiseBrightnessChanged(ViewBrightnessChangedEventArgs e)
         {
-            Debug.Print("view raise ViewBrightnessChangedEventArgs");
             var handler = BrightnessChanged;
             handler?.Invoke(e);
         }

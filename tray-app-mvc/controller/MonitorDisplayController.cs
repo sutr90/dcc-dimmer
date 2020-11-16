@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,9 +19,6 @@ namespace tray_app_mvc.controller
 
         public void OnUserChangedBrightness(ViewBrightnessChangedEventArgs e)
         {
-            Debug.Print("display recv ViewBrightnessChangedEventArgs");
-
-
             if (_model.Brightness == e.Brightness) return;
             
             foreach (var m in _model.DisplayList)
@@ -40,15 +36,11 @@ namespace tray_app_mvc.controller
         {
             var progress = new Progress<string>(s =>
             {
-                Debug.Print("Watch Task Progress {0}", s);
-
                 if (int.TryParse(s, out var newBrightness))
                 {
                     _model.SetBrightness(newBrightness);
                 }
             });
-
-            Debug.Print("Watch Task Started");
 
             Task.Factory.StartNew(() => WatchDisplayBrightness(cancellationToken, progress), TaskCreationOptions.LongRunning);
         }
@@ -59,7 +51,6 @@ namespace tray_app_mvc.controller
             {
                 if (token.IsCancellationRequested)
                 {
-                    Debug.Print("Cancellation requested");
                     break;
                 }
 

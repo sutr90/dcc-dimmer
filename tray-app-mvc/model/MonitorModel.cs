@@ -30,13 +30,11 @@ namespace tray_app_mvc.model
 
         private void DispatchBrightnessChanged(ModelBrightnessChangedEventArgs e)
         {
-            Debug.Print("model raise ModelBrightnessChangedEventArgs");
             BrightnessChanged?.Invoke(e);
         }
 
         private void DispatchDisplayListChanged(DisplayListChangedEventArgs e)
         {
-            Debug.Print("model raise DisplayListChangedEventArgs");
             DisplayListChanged?.Invoke(e);
         }
 
