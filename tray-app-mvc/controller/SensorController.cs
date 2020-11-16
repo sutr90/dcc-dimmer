@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading;
-using System.Threading.Tasks;
 using HidSharp;
 using HidSharp.Reports.Input;
 using HidSharp.Utility;
@@ -13,18 +12,23 @@ namespace tray_app_mvc.controller
     {
         private readonly SensorModel _model;
 
+        private readonly EventWaitHandle _waitHandle;
+
         public SensorController(SensorModel model)
         {
             _model = model;
             DeviceList.Local.Changed += (sender, args) => _model.SetDeviceList();
             HidSharpDiagnostics.EnableTracing = true;
             HidSharpDiagnostics.PerformStrictChecks = true;
+            
+            _waitHandle = new EventWaitHandle(false, EventResetMode.ManualReset);
         }
 
         public void OnDeviceListChanged()
         {
             Debug.Print("Device list changed");
             var modelSensorList = _model.SensorList;
+            _waitHandle.Set();
 
             if (modelSensorList.Count == 0)
             {
@@ -34,12 +38,15 @@ namespace tray_app_mvc.controller
             else
             {
                 Debug.Print("selected new device");
-                Task.Factory.StartNew(() => OpenDevice(modelSensorList[0]), TaskCreationOptions.LongRunning);
+                _waitHandle.Reset();
+                var t = new Thread(() => OpenDevice(modelSensorList[0], _waitHandle));
+                t.Start();
             }
         }
 
-        private void OpenDevice(HidDevice dev)
+        private void OpenDevice(HidDevice dev, WaitHandle eventWaitHandle)
         {
+            Debug.Print("Sensor thread started");
             try
             {
                 var reportDescriptor = dev.GetReportDescriptor();
@@ -75,7 +82,7 @@ namespace tray_app_mvc.controller
                         inputReceiver.Started += (sender, args) => { Debug.Print("Started receiving"); };
 
                         inputReceiver.Start(hidStream);
-
+                        eventWaitHandle.WaitOne();
                     }
                 }
                 else
@@ -89,6 +96,8 @@ namespace tray_app_mvc.controller
                 _model.SetValue(-1);
                 Debug.Print(e.ToString());
             }
+
+            Debug.Print("Sensor thread ended");
         }
 
         private void WriteDeviceItemInputParserResult(DeviceItemInputParser parser)

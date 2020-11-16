@@ -93,9 +93,21 @@ namespace tray_app_mvc
 
         public void OnSensorValueChanged(SensorValueChangedEventArgs e)
         {
-            var luxValue = (int) e.Value;
-
-            sensorValueLabel.Text = luxValue.ToString();
+            var luxValue = ((int) e.Value).ToString();
+            if (sensorValueLabel.InvokeRequired)
+            {
+                sensorValueLabel.Invoke(new Action(
+                        () =>
+                        {
+                            sensorValueLabel.Text = luxValue;
+                        }
+                    )
+                );
+            }
+            else
+            {
+                sensorValueLabel.Text = luxValue;
+            }
         }
     }
     
