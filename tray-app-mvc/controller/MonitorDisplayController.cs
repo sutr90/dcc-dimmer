@@ -10,11 +10,12 @@ namespace tray_app_mvc.controller
     {
         private readonly MonitorModel _model;
 
+        private readonly CancellationTokenSource _displayWatchTokenSource = new CancellationTokenSource();
+            
         public MonitorDisplayController(MonitorModel model)
         {
             _model = model;
-            var displayWatchTokenSource = new CancellationTokenSource(); // todo move to application context, to kill all tasks at once
-            LaunchBrightnessWatchTask(displayWatchTokenSource.Token);
+            LaunchBrightnessWatchTask(_displayWatchTokenSource.Token);
         }
 
         public void OnUserChangedBrightness(ViewBrightnessChangedEventArgs e)
@@ -75,6 +76,11 @@ namespace tray_app_mvc.controller
             var monitorsTask = Task.Run(() => MonitorManager.EnumerateMonitors().ToList());
             var displayList = await monitorsTask;
             _model.SetDisplayList(displayList);
+        }
+
+        public void OnShutdown()
+        {
+            _displayWatchTokenSource.Cancel();
         }
     }
 }

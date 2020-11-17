@@ -12,21 +12,22 @@ namespace tray_app_mvc
         
         private readonly NotifyIcon _notifyIcon = new NotifyIcon();
 
-        private readonly List<IMonitorController> _monitorControllers = new  List<IMonitorController>();
 
         public DdcApplicationContext()
         {
+            var monitorControllers = new  List<IMonitorController>();
             ConfigWindow = new Form1();
             var monitorModel = new MonitorModel();
             monitorModel.BrightnessChanged += ConfigWindow.OnMonitorBrightnessChanged;
             monitorModel.DisplayListChanged += ConfigWindow.OnDisplayListChanged;
             var monitorDisplayController = new MonitorDisplayController(monitorModel);
             
-            _monitorControllers.Add(monitorDisplayController);
-            _monitorControllers.Add(new MonitorUserController(monitorModel));
-            foreach (var controller in _monitorControllers)
+            monitorControllers.Add(monitorDisplayController);
+            monitorControllers.Add(new MonitorUserController(monitorModel));
+            foreach (var controller in monitorControllers)
             {
                 ConfigWindow.BrightnessChanged += controller.OnUserChangedBrightness;
+                ConfigWindow.Shutdown += controller.OnShutdown;
             }
             
             ConfigWindow.RefreshDisplayList += monitorDisplayController.OnRefreshDisplayList;
@@ -36,6 +37,7 @@ namespace tray_app_mvc
 
             sensorModel.SensorValueChanged += ConfigWindow.OnSensorValueChanged;
             sensorModel.DeviceListChanged += sensorController.OnDeviceListChanged;
+            ConfigWindow.Shutdown += sensorController.OnShutdown;
 
             ToolStripItem button1 = new ToolStripMenuItem("Configuration", null, ShowConfig);
             ToolStripItem button2 = new ToolStripMenuItem("Exit", null, Exit);
@@ -66,7 +68,7 @@ namespace tray_app_mvc
 
         private void Exit(object sender, EventArgs e)
         {
-            // TODO: ConfigWindow.Shutdown();
+            ConfigWindow.ShutdownApplication();
             _notifyIcon.Visible = false;
             Application.Exit();
         }

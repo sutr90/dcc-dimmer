@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Drawing;
-using System.Globalization;
 using System.Windows.Forms;
 using tray_app_mvc.model;
 
@@ -73,6 +72,7 @@ namespace tray_app_mvc
 
         public event Action<ViewBrightnessChangedEventArgs> BrightnessChanged;
         public event Action RefreshDisplayList;
+        public event Action Shutdown;
 
         public void OnDisplayListChanged(DisplayListChangedEventArgs evt)
         {
@@ -108,6 +108,11 @@ namespace tray_app_mvc
             {
                 sensorValueLabel.Text = luxValue;
             }
+        }
+
+        public void ShutdownApplication()
+        {
+            Shutdown?.Invoke();
         }
     }
     

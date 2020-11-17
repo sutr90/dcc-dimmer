@@ -20,5 +20,9 @@ namespace tray_app_mvc.controller
         {
             SetBrightness(e.Brightness);
         }
+
+        public void OnShutdown()
+        {
+        }
     }
 }

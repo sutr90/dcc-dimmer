@@ -8,7 +8,7 @@ using tray_app_mvc.model;
 
 namespace tray_app_mvc.controller
 {
-    public class SensorController
+    public class SensorController : IController
     {
         private readonly SensorModel _model;
 
@@ -112,6 +112,11 @@ namespace tray_app_mvc.controller
             var lux = 0.01 * Math.Pow(2, exp) * mantissa;
 
             _model.SetValue(lux);
+        }
+
+        public void OnShutdown()
+        {
+            _waitHandle.Set();
         }
     }
 }
