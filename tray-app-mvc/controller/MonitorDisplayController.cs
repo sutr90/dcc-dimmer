@@ -20,11 +20,16 @@ namespace tray_app_mvc.controller
 
         public void OnUserChangedBrightness(ViewBrightnessChangedEventArgs e)
         {
-            if (_model.Brightness == e.Brightness) return;
+            ChangeDisplayBrightness(e.Brightness);
+        }
+        
+        public void ChangeDisplayBrightness(int newBrightness)
+        {
+            if (_model.Brightness == newBrightness) return;
             
             foreach (var m in _model.DisplayList)
             {
-                m.SetDeviceBrightness(e.Brightness);
+                m.SetDeviceBrightness(newBrightness);
             }
         }
 

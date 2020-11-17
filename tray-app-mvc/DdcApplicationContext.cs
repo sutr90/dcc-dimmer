@@ -33,7 +33,7 @@ namespace tray_app_mvc
             ConfigWindow.RefreshDisplayList += monitorDisplayController.OnRefreshDisplayList;
 
             var sensorModel = new SensorModel();
-            var sensorController = new SensorController(sensorModel);
+            var sensorController = new SensorController(sensorModel, monitorDisplayController);
 
             sensorModel.SensorValueChanged += ConfigWindow.OnSensorValueChanged;
             sensorModel.DeviceListChanged += sensorController.OnDeviceListChanged;
