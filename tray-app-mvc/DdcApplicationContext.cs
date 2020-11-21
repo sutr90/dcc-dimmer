@@ -40,6 +40,7 @@ namespace tray_app_mvc
             sensorModel.SensorValueChanged += ConfigWindow.OnSensorValueChanged;
             sensorModel.DeviceListChanged += sensorController.OnDeviceListChanged;
             ConfigWindow.Shutdown += sensorController.OnShutdown;
+            ConfigWindow.ManualModeChanged += sensorController.OnManualModeChanged;
 
             ToolStripItem button1 = new ToolStripMenuItem("Configuration", null, ShowConfig);
             ToolStripItem button2 = new ToolStripMenuItem("Exit", null, Exit);

@@ -13,10 +13,13 @@ namespace tray_app_mvc.model
 
         public List<HidDevice> SensorList { get; private set; }
 
+        public bool ManualMode { get; set; }
+
         public SensorModel()
         {
             SensorList = new List<HidDevice>();
             SetDeviceList();
+            ManualMode = false;
         }
 
         public void SetValue(double value)
@@ -31,6 +34,11 @@ namespace tray_app_mvc.model
             var devices = DeviceList.Local;
             SensorList = devices.GetHidDevices().ToList().FindAll(device => device.VendorID == VendorId);
             DeviceListChanged?.Invoke();
+        }
+
+        public void SetManualMode(bool manualMode)
+        {
+            ManualMode = manualMode;
         }
 
         public event Action<SensorValueChangedEventArgs> SensorValueChanged;

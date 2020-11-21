@@ -13,30 +13,25 @@ namespace tray_app_mvc
             currentBrightnessLabel.Text = e.Brightness.ToString();
         }
 
-        private bool _disabled;
+        private bool _manualMode;
 
         public Form1()
         {
             InitializeComponent();
         }
 
-        private void disableButton_Click(object sender, EventArgs e)
+        private void manualModeButton_Click(object sender, EventArgs e)
         {
-            _disabled = !_disabled;
-            disableButton.Text = _disabled ? "Enable" : "Disable";
+            _manualMode = !_manualMode;
+            manualModeButton.Text = _manualMode ? "Manual" : "Automatic";
+            ManualModeChanged?.Invoke(_manualMode);
         }
 
         private void setBrightnessButton_Click(object sender, EventArgs e)
         {
             var b = GetBrightnessValue();
             var args = new ViewBrightnessChangedEventArgs {Brightness = b};
-            RaiseBrightnessChanged(args);
-        }
-
-        private void RaiseBrightnessChanged(ViewBrightnessChangedEventArgs e)
-        {
-            var handler = BrightnessChanged;
-            handler?.Invoke(e);
+            BrightnessChanged?.Invoke(args);
         }
 
         private int GetBrightnessValue()
@@ -71,6 +66,7 @@ namespace tray_app_mvc
         }
 
         public event Action<ViewBrightnessChangedEventArgs> BrightnessChanged;
+        public event Action<bool> ManualModeChanged;
         public event Action RefreshDisplayList;
         public event Action Shutdown;
 
@@ -86,7 +82,7 @@ namespace tray_app_mvc
             listBox1.EndUpdate();
         }
 
-        private void refreshButton_Click(object? sender, EventArgs e)
+        private void refreshButton_Click(object sender, EventArgs e)
         {
             RefreshDisplayList?.Invoke();
         }

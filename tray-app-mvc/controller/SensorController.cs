@@ -114,8 +114,11 @@ namespace tray_app_mvc.controller
             var lux = 0.01 * Math.Pow(2, exp) * mantissa;
 
             _sensorModel.SetValue(lux);
-            
-            _displayController.ChangeDisplayBrightness(TransferFunction(lux));
+
+            if (!_sensorModel.ManualMode)
+            {
+                _displayController.ChangeDisplayBrightness(TransferFunction(lux));
+            }
         }
 
         private static int TransferFunction(double lux)
@@ -129,6 +132,11 @@ namespace tray_app_mvc.controller
         public void OnShutdown()
         {
             _waitHandle.Set();
+        }
+
+        public void OnManualModeChanged(bool obj)
+        {
+            _sensorModel.SetManualMode(obj);
         }
     }
 }

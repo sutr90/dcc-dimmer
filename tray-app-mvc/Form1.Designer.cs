@@ -34,7 +34,7 @@
             this.label3 = new System.Windows.Forms.Label();
             this.sensorValueLabel = new System.Windows.Forms.Label();
             this.setBrightnessButton = new System.Windows.Forms.Button();
-            this.disableButton = new System.Windows.Forms.Button();
+            this.manualModeButton = new System.Windows.Forms.Button();
             this.refreshDisplayListButton = new System.Windows.Forms.Button();
             this.label6 = new System.Windows.Forms.Label();
             this.SuspendLayout();
@@ -100,18 +100,18 @@
             // 
             // button3
             // 
-            this.disableButton.Location = new System.Drawing.Point(12, 86);
-            this.disableButton.Name = "disableButton";
-            this.disableButton.Size = new System.Drawing.Size(217, 23);
-            this.disableButton.TabIndex = 4;
-            this.disableButton.Text = "Disable";
-            this.disableButton.UseVisualStyleBackColor = true;
-            this.disableButton.Click += new System.EventHandler(this.disableButton_Click);
+            this.manualModeButton.Location = new System.Drawing.Point(12, 86);
+            this.manualModeButton.Name = "manualModeButton";
+            this.manualModeButton.Size = new System.Drawing.Size(217, 23);
+            this.manualModeButton.TabIndex = 4;
+            this.manualModeButton.Text = "Automatic";
+            this.manualModeButton.UseVisualStyleBackColor = true;
+            this.manualModeButton.Click += new System.EventHandler(this.manualModeButton_Click);
             // 
             // button4
             // 
             this.refreshDisplayListButton.Location = new System.Drawing.Point(12, 206);
-            this.refreshDisplayListButton.Name = "disableButton";
+            this.refreshDisplayListButton.Name = "manualModeButton";
             this.refreshDisplayListButton.Size = new System.Drawing.Size(217, 23);
             this.refreshDisplayListButton.TabIndex = 5;
             this.refreshDisplayListButton.Text = "Refresh display list";
@@ -144,7 +144,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(240, 242);
-            this.Controls.Add(this.disableButton);
+            this.Controls.Add(this.manualModeButton);
             this.Controls.Add(this.refreshDisplayListButton);
             this.Controls.Add(this.setBrightnessButton);
             this.Controls.Add(this.sensorValueLabel);
@@ -171,7 +171,7 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label sensorValueLabel;
         private System.Windows.Forms.Button setBrightnessButton;
-        private System.Windows.Forms.Button disableButton;
+        private System.Windows.Forms.Button manualModeButton;
         private System.Windows.Forms.ListBox listBox1;
         private System.Windows.Forms.Button refreshDisplayListButton;
 
