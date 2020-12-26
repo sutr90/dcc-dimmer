@@ -5,6 +5,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>tray_app_mvc</RootNamespace>
     <UseWindowsForms>true</UseWindowsForms>
+	<ApplicationIcon>Resources/AppIcon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>

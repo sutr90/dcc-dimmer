@@ -53,6 +53,7 @@ namespace tray_app_mvc
 
             _notifyIcon.ContextMenuStrip = contextMenuStrip;
             _notifyIcon.Visible = true;
+            _notifyIcon.DoubleClick += ShowConfig;
 
 
             monitorDisplayController.OnRefreshDisplayList();
