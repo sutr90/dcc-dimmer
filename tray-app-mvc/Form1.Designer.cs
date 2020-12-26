@@ -1,4 +1,6 @@
-﻿namespace tray_app_mvc
+﻿using System.Windows.Forms;
+
+namespace tray_app_mvc
 {
     partial class Form1
     {
@@ -65,7 +67,7 @@
             this.brightnessTextbox.Name = "textBox1";
             this.brightnessTextbox.Size = new System.Drawing.Size(105, 23);
             this.brightnessTextbox.TabIndex = 3;
-            this.brightnessTextbox.TextChanged += new System.EventHandler(this.brightnessTextbox_TextChanged);
+            this.brightnessTextbox.Validating += new System.ComponentModel.CancelEventHandler(this.brightnessTextbox_Validating);  
             // 
             // label3
             // 
@@ -158,8 +160,14 @@
             this.MaximizeBox = false;
             this.Name = "Form1";
             this.Text = "HID ALS";
+            
+            this.errorProvider1 = new ErrorProvider();
+            this.errorProvider1.DataMember = null;  
+            
             this.ResumeLayout(false);
             this.PerformLayout();
+            
+            errorProvider1.ContainerControl = this;  
         }
 
         #endregion
@@ -174,6 +182,7 @@
         private System.Windows.Forms.Button manualModeButton;
         private System.Windows.Forms.ListBox listBox1;
         private System.Windows.Forms.Button refreshDisplayListButton;
+        private System.Windows.Forms.ErrorProvider errorProvider1;  
 
     }
 }

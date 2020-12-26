@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
@@ -29,6 +30,8 @@ namespace tray_app_mvc
 
         private void setBrightnessButton_Click(object sender, EventArgs e)
         {
+            if (!ValidateChildren()) return;
+
             var b = GetBrightnessValue();
             var args = new ViewBrightnessChangedEventArgs {Brightness = b};
             BrightnessChanged?.Invoke(args);
@@ -46,23 +49,6 @@ namespace tray_app_mvc
 
             Debug.WriteLine("Incorrect brightness value {0}", brightnessTextbox.Text);
             throw new Exception("Incorrect brightness value");
-        }
-
-
-        private void brightnessTextbox_TextChanged(object sender, EventArgs e)
-        {
-            try
-            {
-                GetBrightnessValue();
-
-                brightnessTextbox.ForeColor = SystemColors.ControlText;
-                setBrightnessButton.Enabled = true;
-            }
-            catch
-            {
-                brightnessTextbox.BackColor = Color.Red;
-                setBrightnessButton.Enabled = false;
-            }
         }
 
         public event Action<ViewBrightnessChangedEventArgs> BrightnessChanged;
@@ -93,10 +79,7 @@ namespace tray_app_mvc
             if (sensorValueLabel.InvokeRequired)
             {
                 sensorValueLabel.Invoke(new Action(
-                        () =>
-                        {
-                            sensorValueLabel.Text = luxValue;
-                        }
+                        () => { sensorValueLabel.Text = luxValue; }
                     )
                 );
             }
@@ -110,11 +93,27 @@ namespace tray_app_mvc
         {
             Shutdown?.Invoke();
         }
+
+        private void brightnessTextbox_Validating(object sender, CancelEventArgs e)
+        {
+            e.Cancel = ValidateBrightness();
+        }
+
+        private bool ValidateBrightness()
+        {
+            if (!int.TryParse(brightnessTextbox.Text, out var brightness) || (brightness < 0 || brightness > 100))
+            {
+                errorProvider1.SetError(brightnessTextbox, "Please input valid brightness value [0-100]");
+                return true;
+            }
+
+            errorProvider1.SetError(brightnessTextbox, "");
+            return false;
+        }
     }
-    
+
     public class ViewBrightnessChangedEventArgs : EventArgs
     {
         public int Brightness { get; set; }
     }
-
 }

@@ -126,7 +126,7 @@ namespace tray_app_mvc.controller
             // calculated value
             // y = 2.669 * (x ^ 0,4995)
             // ~ y = 2.669 * sqrt(x)
-            return Math.Clamp((int) Math.Round(2.669 * Math.Sqrt(lux)), 0, 100);
+            return Math.Clamp((int) Math.Floor(2.669 * Math.Sqrt(lux)), 0, 100);
         }
 
         public void OnShutdown()
