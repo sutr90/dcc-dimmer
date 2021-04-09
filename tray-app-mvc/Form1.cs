@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Drawing;
 using System.Windows.Forms;
 using tray_app_mvc.model;
 
@@ -12,6 +11,7 @@ namespace tray_app_mvc
         public void OnMonitorBrightnessChanged(ModelBrightnessChangedEventArgs e)
         {
             currentBrightnessLabel.Text = e.Brightness.ToString();
+            brightnessTextbox.Text = e.Brightness.ToString();
         }
 
         private bool _manualMode;
@@ -24,8 +24,11 @@ namespace tray_app_mvc
         private void manualModeButton_Click(object sender, EventArgs e)
         {
             _manualMode = !_manualMode;
-            manualModeButton.Text = _manualMode ? "Manual" : "Automatic";
+            manualModeButton.Text = _manualMode ? "Switch to Automatic" : "Switch to Manual";
             ManualModeChanged?.Invoke(_manualMode);
+            setBrightnessButton.Enabled = _manualMode;
+            brightnessTextbox.Enabled = _manualMode;
+            errorProvider1.SetError(brightnessTextbox, null);
         }
 
         private void setBrightnessButton_Click(object sender, EventArgs e)
@@ -101,13 +104,13 @@ namespace tray_app_mvc
 
         private bool ValidateBrightness()
         {
-            if (!int.TryParse(brightnessTextbox.Text, out var brightness) || (brightness < 0 || brightness > 100))
+            if (!int.TryParse(brightnessTextbox.Text, out var brightness) || brightness < 0 || brightness > 100)
             {
                 errorProvider1.SetError(brightnessTextbox, "Please input valid brightness value [0-100]");
                 return true;
             }
 
-            errorProvider1.SetError(brightnessTextbox, "");
+            errorProvider1.SetError(brightnessTextbox, null);
             return false;
         }
     }

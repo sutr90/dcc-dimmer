@@ -67,6 +67,8 @@ namespace tray_app_mvc
             this.brightnessTextbox.Name = "textBox1";
             this.brightnessTextbox.Size = new System.Drawing.Size(105, 23);
             this.brightnessTextbox.TabIndex = 3;
+            this.brightnessTextbox.Enabled = false;
+            this.brightnessTextbox.TextAlign = HorizontalAlignment.Right;
             this.brightnessTextbox.Validating += new System.ComponentModel.CancelEventHandler(this.brightnessTextbox_Validating);  
             // 
             // label3
@@ -97,6 +99,7 @@ namespace tray_app_mvc
             this.setBrightnessButton.Size = new System.Drawing.Size(95, 25);
             this.setBrightnessButton.TabIndex = 4;
             this.setBrightnessButton.Text = "Set brightness";
+            this.setBrightnessButton.Enabled = false;
             this.setBrightnessButton.UseVisualStyleBackColor = true;
             this.setBrightnessButton.Click += new System.EventHandler(this.setBrightnessButton_Click);
             // 
@@ -106,14 +109,14 @@ namespace tray_app_mvc
             this.manualModeButton.Name = "manualModeButton";
             this.manualModeButton.Size = new System.Drawing.Size(217, 23);
             this.manualModeButton.TabIndex = 4;
-            this.manualModeButton.Text = "Automatic";
+            this.manualModeButton.Text = "Switch to Manual mode";
             this.manualModeButton.UseVisualStyleBackColor = true;
             this.manualModeButton.Click += new System.EventHandler(this.manualModeButton_Click);
             // 
             // button4
             // 
             this.refreshDisplayListButton.Location = new System.Drawing.Point(12, 206);
-            this.refreshDisplayListButton.Name = "manualModeButton";
+            this.refreshDisplayListButton.Name = "refreshDisplayListButton";
             this.refreshDisplayListButton.Size = new System.Drawing.Size(217, 23);
             this.refreshDisplayListButton.TabIndex = 5;
             this.refreshDisplayListButton.Text = "Refresh display list";
