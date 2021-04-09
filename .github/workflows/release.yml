@@ -30,7 +30,7 @@ jobs:
           tag=$(git describe --tags --abbrev=0)
           release_name="App-$tag-${{ matrix.target }}"
           # Build everything
-          dotnet publish src/App/App.csproj --framework netcoreapp3.1 --runtime "${{ matrix.target }}" --no-self-contained -c Release -o "$release_name"
+          dotnet publish tray-app-mvc/tray-app-mvc.csproj --framework netcoreapp3.1 --runtime "${{ matrix.target }}" --no-self-contained -c Release -o "$release_name"
           # Pack files
           7z a -tzip "${release_name}.zip" "./${release_name}/*"
           # Delete output directory
