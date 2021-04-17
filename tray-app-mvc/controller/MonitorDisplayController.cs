@@ -11,7 +11,7 @@ namespace tray_app_mvc.controller
         private readonly MonitorModel _model;
 
         private readonly CancellationTokenSource _displayWatchTokenSource = new CancellationTokenSource();
-            
+
         public MonitorDisplayController(MonitorModel model)
         {
             _model = model;
@@ -22,11 +22,11 @@ namespace tray_app_mvc.controller
         {
             ChangeDisplayBrightness(e.Brightness);
         }
-        
+
         public void ChangeDisplayBrightness(int newBrightness)
         {
             if (_model.Brightness == newBrightness) return;
-            
+
             foreach (var m in _model.DisplayList)
             {
                 m.SetDeviceBrightness(newBrightness);
@@ -36,22 +36,18 @@ namespace tray_app_mvc.controller
         public async void OnRefreshDisplayList()
         {
             await LoadMonitors();
+            _model.SetBrightness(ReadMonitorBrightness());
         }
 
         private void LaunchBrightnessWatchTask(CancellationToken cancellationToken)
         {
-            var progress = new Progress<string>(s =>
-            {
-                if (int.TryParse(s, out var newBrightness))
-                {
-                    _model.SetBrightness(newBrightness);
-                }
-            });
+            var progress = new Progress<int>(s => { _model.SetBrightness(s); });
 
-            Task.Factory.StartNew(() => WatchDisplayBrightness(cancellationToken, progress), TaskCreationOptions.LongRunning);
+            Task.Factory.StartNew(() => WatchDisplayBrightness(cancellationToken, progress),
+                TaskCreationOptions.LongRunning);
         }
 
-        private void WatchDisplayBrightness(CancellationToken token, IProgress<string> progress)
+        private void WatchDisplayBrightness(CancellationToken token, IProgress<int> progress)
         {
             while (true)
             {
@@ -60,20 +56,24 @@ namespace tray_app_mvc.controller
                     break;
                 }
 
-                var modelDisplayList = _model.DisplayList;
-                if (modelDisplayList.Count > 0)
-                {
-                    foreach (var monitor in modelDisplayList)
-                    {
-                        monitor.ReadDeviceBrightness();
-                    }
-
-                    // TODO: tady to chce zmenit logiku, aby to bralo v potaz vybrany monitor a ne vzdy prvni
-                    progress.Report(modelDisplayList[0].Brightness.ToString());
-                }
+                progress.Report(ReadMonitorBrightness());
 
                 Task.Delay(5000, token).Wait(token);
             }
+        }
+
+        private int ReadMonitorBrightness()
+        {
+            var modelDisplayList = _model.DisplayList;
+            if (modelDisplayList.Count <= 0) return -1;
+
+            foreach (var monitor in modelDisplayList)
+            {
+                monitor.ReadDeviceBrightness();
+            }
+
+            // TODO: tady to chce zmenit logiku, aby to bralo v potaz vybrany monitor a ne vzdy prvni
+            return modelDisplayList[0].Brightness;
         }
 
         private async Task LoadMonitors()
