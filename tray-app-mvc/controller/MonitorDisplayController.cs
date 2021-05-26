@@ -36,7 +36,7 @@ namespace tray_app_mvc.controller
         public async void OnRefreshDisplayList()
         {
             await LoadMonitors();
-            _model.SetBrightness(ReadMonitorBrightness());
+            _model.SetBrightness(ReadMonitorBrightness(0));
         }
 
         private void LaunchBrightnessWatchTask(CancellationToken cancellationToken)
@@ -56,13 +56,19 @@ namespace tray_app_mvc.controller
                     break;
                 }
 
-                progress.Report(ReadMonitorBrightness());
+                var monitorBrightness = ReadMonitorBrightness(0);
+                progress.Report(monitorBrightness);
+
+                if (monitorBrightness == -1)
+                {
+                    OnRefreshDisplayList();
+                }
 
                 Task.Delay(5000, token).Wait(token);
             }
         }
 
-        private int ReadMonitorBrightness()
+        private int ReadMonitorBrightness(int monitorIndex)
         {
             var modelDisplayList = _model.DisplayList;
             if (modelDisplayList.Count <= 0) return -1;
@@ -72,8 +78,7 @@ namespace tray_app_mvc.controller
                 monitor.ReadDeviceBrightness();
             }
 
-            // TODO: tady to chce zmenit logiku, aby to bralo v potaz vybrany monitor a ne vzdy prvni
-            return modelDisplayList[0].Brightness;
+            return modelDisplayList[monitorIndex].Brightness;
         }
 
         private async Task LoadMonitors()
