@@ -12,6 +12,12 @@ namespace tray_app_mvc
         private Form1 ConfigWindow { get; }
 
         private readonly NotifyIcon _notifyIcon = new NotifyIcon();
+        
+        private static readonly Icon _icon0 = new Icon(Resources.Icon0, SystemInformation.SmallIconSize);
+        private static readonly Icon _icon25 = new Icon(Resources.Icon25, SystemInformation.SmallIconSize);
+        private static readonly Icon _icon50 = new Icon(Resources.Icon50, SystemInformation.SmallIconSize);
+        private static readonly Icon _icon75 = new Icon(Resources.Icon75, SystemInformation.SmallIconSize);
+        private static readonly Icon _icon100 = new Icon(Resources.Icon100, SystemInformation.SmallIconSize);
 
 
         public DdcApplicationContext()
@@ -64,25 +70,25 @@ namespace tray_app_mvc
         {
             var brightness = obj.Brightness;
 
-            var icon = Resources.Icon100;
+            var icon = _icon100;
             if (brightness < 12)
             {
-                icon = Resources.Icon0;
+                icon = _icon0;
             }
             else if (brightness < 38)
             {
-                icon = Resources.Icon25;
+                icon = _icon25;
             }
             else if (brightness < 62)
             {
-                icon = Resources.Icon50;
+                icon = _icon50;
             }
             else if (brightness < 88)
             {
-                icon = Resources.Icon75;
+                icon = _icon75;
             }
 
-            _notifyIcon.Icon = new Icon(icon, SystemInformation.SmallIconSize);
+            _notifyIcon.Icon = icon;
         }
 
 
