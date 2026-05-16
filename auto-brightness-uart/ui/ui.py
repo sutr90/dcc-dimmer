@@ -1,4 +1,5 @@
 import re
+import json
 import signal
 import sys
 from pathlib import Path
@@ -26,6 +27,34 @@ MODE_RE = re.compile(r"^mode=(?P<mode>automatic|manual)(?: value=(?P<value>\d+))
 MODE_AUTOMATIC = "automatic"
 MODE_MANUAL = "manual"
 UI_DIR = Path(__file__).resolve().parent
+CONFIG_PATH = UI_DIR / "config.json"
+DEFAULT_SERIAL_CONFIG = {
+    "port": "COM3",
+    "baudrate": 9600,
+    "timeout": 1,
+    "write_timeout": 1,
+}
+
+
+def load_serial_config():
+    config = DEFAULT_SERIAL_CONFIG.copy()
+
+    try:
+        with CONFIG_PATH.open("r", encoding="utf-8") as handle:
+            loaded = json.load(handle)
+    except FileNotFoundError:
+        return config
+    except Exception:
+        return config
+
+    if not isinstance(loaded, dict):
+        return config
+
+    for key in ("port", "baudrate", "timeout", "write_timeout"):
+        if key in loaded:
+            config[key] = loaded[key]
+
+    return config
 
 
 class SerialWorker(QObject):
@@ -33,10 +62,12 @@ class SerialWorker(QObject):
     error_occurred = Signal(str)
     command_requested = Signal(str)
 
-    def __init__(self, port, baudrate=9600):
+    def __init__(self, port, baudrate=9600, timeout=1, write_timeout=1):
         super().__init__()
         self.port = port
         self.baudrate = baudrate
+        self.timeout = timeout
+        self.write_timeout = write_timeout
         self._running = True
         self._serial = None
 
@@ -44,7 +75,12 @@ class SerialWorker(QObject):
     def run(self):
         """Read serial lines and forward them to the UI thread."""
         try:
-            with serial.Serial(self.port, self.baudrate, timeout=1, write_timeout=1) as ser:
+            with serial.Serial(
+                self.port,
+                self.baudrate,
+                timeout=self.timeout,
+                write_timeout=self.write_timeout,
+            ) as ser:
                 self._serial = ser
                 while self._running:
                     line = ser.readline().decode("utf-8", errors="replace").strip()
@@ -78,6 +114,7 @@ class SensorApp(QMainWindow):
         self._mode = MODE_AUTOMATIC
         self._manual_value = 0
         self._display_value = None
+        self._serial_config = load_serial_config()
         self.init_ui()
         self.setup_serial()
         self.setup_tray()
@@ -121,7 +158,12 @@ class SensorApp(QMainWindow):
 
     def setup_serial(self):
         self.thread = QThread()
-        self.worker = SerialWorker(port="COM3")
+        self.worker = SerialWorker(
+            port=self._serial_config["port"],
+            baudrate=self._serial_config["baudrate"],
+            timeout=self._serial_config["timeout"],
+            write_timeout=self._serial_config["write_timeout"],
+        )
         self.worker.moveToThread(self.thread)
 
         self.thread.started.connect(self.worker.run)
