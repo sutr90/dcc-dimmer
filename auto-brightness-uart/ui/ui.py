@@ -203,7 +203,7 @@ class SensorApp(QMainWindow):
         layout.addRow("Sensor", self.sensor_value_label)
         layout.addRow("Display", self.display_value_label)
         layout.addRow("Mode", self.mode_value_label)
-        layout.addRow("", self.mode_button)
+        layout.addRow(self.mode_button)
         layout.addRow("Manual value", self.manual_value_spinbox)
         layout.addRow("", self.manual_apply_button)
         if DEBUG_ENABLED:
