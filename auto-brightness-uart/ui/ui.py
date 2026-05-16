@@ -8,7 +8,7 @@ import threading
 from pathlib import Path
 
 import serial
-from PySide6.QtCore import QObject, Signal, Slot, QThread, Qt
+from PySide6.QtCore import QObject, QSize, Signal, Slot, QThread, Qt
 from PySide6.QtCore import QTimer
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
@@ -169,6 +169,7 @@ class SensorApp(QMainWindow):
         self._mode = MODE_AUTOMATIC
         self._manual_value = 0
         self._display_value = None
+        self._serial_error = False
         self._serial_config = serial_config
         debug_print("SensorApp.__init__:", self._serial_config)
         self.init_ui()
@@ -192,6 +193,8 @@ class SensorApp(QMainWindow):
         self.manual_value_spinbox.lineEdit().returnPressed.connect(self.apply_manual_value)
         self.manual_apply_button = QPushButton("Apply Manual Value")
         self.last_line_label = QLabel("waiting for serial data")
+        self.reconnect_button = QPushButton("Reconnect Serial")
+        self.reconnect_button.hide()
 
         for label in (
             self.sensor_value_label,
@@ -209,17 +212,41 @@ class SensorApp(QMainWindow):
         manual_row.addWidget(self.manual_value_spinbox)
         manual_row.addWidget(self.manual_apply_button)
         layout.addRow(manual_row)
+        layout.addRow(self.reconnect_button)
         if DEBUG_ENABLED:
             layout.addRow("Last line", self.last_line_label)
         self.setCentralWidget(central)
+
+        # Signal connections moved from setup_serial
+        self.mode_button.clicked.connect(self.toggle_mode)
+        self.manual_apply_button.clicked.connect(self.apply_manual_value)
+        self.reconnect_button.clicked.connect(self.setup_serial)
+
         self.update_mode_widgets()
         self.update_tray_icon()
+        self._update_window_size()
+        debug_print("SensorApp.init_ui: fixed size", self.size())
+
+    def _update_window_size(self):
+        self.setFixedSize(QSize(16777215, 16777215))
         self.adjustSize()
         self.setFixedSize(self.size())
-        debug_print("SensorApp.init_ui: fixed size", self.size())
+
 
     def setup_serial(self):
         debug_print("SensorApp.setup_serial")
+
+        if hasattr(self, "thread"):
+            debug_print("SensorApp.setup_serial: cleaning up existing thread")
+            self.worker.stop()
+            self.thread.quit()
+            self.thread.wait()
+
+        self._serial_error = False
+        self.reconnect_button.hide()
+        self._update_window_size()
+        self.update_tray_icon()
+
         self.thread = QThread()
         self.worker = SerialWorker(
             port=self._serial_config["port"],
@@ -232,8 +259,6 @@ class SensorApp(QMainWindow):
         self.thread.started.connect(self.worker.run)
         self.worker.data_received.connect(self.handle_serial_line)
         self.worker.error_occurred.connect(self.handle_serial_error)
-        self.mode_button.clicked.connect(self.toggle_mode)
-        self.manual_apply_button.clicked.connect(self.apply_manual_value)
         self.thread.start()
         debug_print("SensorApp.setup_serial: worker thread started")
 
@@ -241,6 +266,7 @@ class SensorApp(QMainWindow):
     def handle_serial_line(self, line):
         debug_print("SensorApp.handle_serial_line:", repr(line))
         self.last_line_label.setText(line)
+        self._serial_error = False
 
         mode_match = MODE_RE.match(line)
         if mode_match:
@@ -290,6 +316,9 @@ class SensorApp(QMainWindow):
         debug_print("SensorApp.update_tray_icon:", icon_name)
 
     def _get_display_icon_name(self):
+        if self._serial_error:
+            return "brightness-error.png"
+
         if self._display_value is None:
             return "brightness-unknown.png"
 
@@ -336,6 +365,10 @@ class SensorApp(QMainWindow):
     def handle_serial_error(self, message):
         debug_print("SensorApp.handle_serial_error:", message)
         self.last_line_label.setText(f"serial error: {message}")
+        self._serial_error = True
+        self.reconnect_button.show()
+        self._update_window_size()
+        self.update_tray_icon()
 
     def setup_tray(self):
         debug_print("SensorApp.setup_tray")
