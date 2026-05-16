@@ -195,8 +195,8 @@ class SensorApp(QMainWindow):
         self.manual_value_spinbox.lineEdit().returnPressed.connect(self.apply_manual_value)
         self.manual_apply_button = QPushButton("Apply Manual Value")
         self.last_line_label = QLabel("waiting for serial data")
-        self.reconnect_button = QPushButton("Reconnect Serial")
-        self.reconnect_button.hide()
+        self.reconnect_button = QPushButton("Connecting...")
+        self.reconnect_button.setEnabled(False)
 
         for label in (
             self.sensor_value_label,
@@ -246,7 +246,8 @@ class SensorApp(QMainWindow):
             self.thread.wait()
 
         self._serial_error = False
-        self.reconnect_button.hide()
+        self.reconnect_button.setText("Connecting...")
+        self.reconnect_button.setEnabled(False)
         self._update_window_size()
         self.update_tray_icon()
 
@@ -270,6 +271,10 @@ class SensorApp(QMainWindow):
         debug_print("SensorApp.handle_serial_line:", repr(line))
         self.last_line_label.setText(line)
         self._serial_error = False
+
+        if self.reconnect_button.text() != "Connected":
+            self.reconnect_button.setText("Connected")
+            self.reconnect_button.setEnabled(False)
 
         mode_match = MODE_RE.match(line)
         if mode_match:
@@ -373,7 +378,8 @@ class SensorApp(QMainWindow):
         debug_print("SensorApp.handle_serial_error:", message)
         self.last_line_label.setText(f"serial error: {message}")
         self._serial_error = True
-        self.reconnect_button.show()
+        self.reconnect_button.setText("Reconnect Serial")
+        self.reconnect_button.setEnabled(True)
         self._update_window_size()
         self.update_tray_icon()
 
