@@ -16,6 +16,7 @@ bool brightnessWritePending = false;
 bool brightnessReadRequestPending = false;
 bool brightnessReadPending = false;
 bool displayBrightnessKnown = false;
+bool needsReadBack = false;
 uint8_t pendingBrightness = 0;
 uint8_t displayBrightness = 0;
 AppState appState;
@@ -149,6 +150,9 @@ void handleSerialInput() {
 }
 
 void queueDisplayBrightnessWrite(uint8_t brightness) {
+  if (displayBrightnessKnown && brightness == displayBrightness) {
+    return;
+  }
   pendingBrightness = brightness;
   brightnessWritePending = true;
 }
@@ -162,10 +166,8 @@ void serviceDisplayBrightnessWrite(unsigned long now) {
     displayBrightness = pendingBrightness;
     displayBrightnessKnown = true;
     brightnessWritePending = false;
-    // Don't schedule an immediate read-back; many displays are slow to update
-    // their internal VCP status registers even as the physical brightness
-    // changes. The periodic polling will eventually confirm the value.
     lastBrightnessReadMs = now;
+    needsReadBack = true;
   }
 }
 
@@ -207,8 +209,9 @@ void serviceDisplayBrightnessPolling(unsigned long now) {
     return;
   }
 
-  if (now - lastBrightnessReadMs >= DDC_BRIGHTNESS_POLL_INTERVAL_MS) {
+  if (needsReadBack && now - lastBrightnessReadMs >= DDC_BRIGHTNESS_POLL_INTERVAL_MS) {
     scheduleDisplayBrightnessRead();
+    needsReadBack = false;
   }
 }
 
