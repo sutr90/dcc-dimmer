@@ -12,44 +12,68 @@ from PySide6.QtWidgets import (
     QLabel,
     QMainWindow,
     QMenu,
+    QPushButton,
     QSystemTrayIcon,
     QWidget,
 )
 
 
 REPORT_RE = re.compile(r"^sensor=(?P<sensor>[^,]+),display=(?P<display>.+)$")
+MODE_RE = re.compile(r"^mode=(?P<mode>automatic|manual)(?: value=(?P<value>\d+))?$")
+
+MODE_AUTOMATIC = "automatic"
+MODE_MANUAL = "manual"
 
 
 class SerialWorker(QObject):
     data_received = Signal(str)
     error_occurred = Signal(str)
+    command_requested = Signal(str)
 
     def __init__(self, port, baudrate=9600):
         super().__init__()
         self.port = port
         self.baudrate = baudrate
         self._running = True
+        self._serial = None
 
     @Slot()
     def run(self):
         """Read serial lines and forward them to the UI thread."""
         try:
-            with serial.Serial(self.port, self.baudrate, timeout=1) as ser:
+            with serial.Serial(self.port, self.baudrate, timeout=1, write_timeout=1) as ser:
+                self._serial = ser
                 while self._running:
                     line = ser.readline().decode("utf-8", errors="replace").strip()
                     if line:
                         self.data_received.emit(line)
         except Exception as exc:
             self.error_occurred.emit(str(exc))
+        finally:
+            self._serial = None
 
     def stop(self):
         self._running = False
+
+    @Slot(str)
+    def send_command(self, command):
+        if self._serial is None:
+            return
+
+        try:
+            payload = f"{command}\n".encode("utf-8")
+            self._serial.write(payload)
+            self._serial.flush()
+        except Exception as exc:
+            self.error_occurred.emit(str(exc))
 
 
 class SensorApp(QMainWindow):
     def __init__(self):
         super().__init__()
         self._shutting_down = False
+        self._mode = MODE_AUTOMATIC
+        self._manual_value = 0
         self.init_ui()
         self.setup_serial()
         self.setup_tray()
@@ -62,13 +86,22 @@ class SensorApp(QMainWindow):
 
         self.sensor_value_label = QLabel("unknown")
         self.display_value_label = QLabel("unknown")
+        self.mode_value_label = QLabel("automatic")
+        self.mode_button = QPushButton("Switch to Manual")
         self.last_line_label = QLabel("waiting for serial data")
 
-        for label in (self.sensor_value_label, self.display_value_label, self.last_line_label):
+        for label in (
+            self.sensor_value_label,
+            self.display_value_label,
+            self.mode_value_label,
+            self.last_line_label,
+        ):
             label.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
         layout.addRow("Sensor", self.sensor_value_label)
         layout.addRow("Display", self.display_value_label)
+        layout.addRow("Mode", self.mode_value_label)
+        layout.addRow("", self.mode_button)
         layout.addRow("Last line", self.last_line_label)
         self.setCentralWidget(central)
 
@@ -80,11 +113,23 @@ class SensorApp(QMainWindow):
         self.thread.started.connect(self.worker.run)
         self.worker.data_received.connect(self.handle_serial_line)
         self.worker.error_occurred.connect(self.handle_serial_error)
+        self.worker.command_requested.connect(self.worker.send_command)
+        self.mode_button.clicked.connect(self.toggle_mode)
         self.thread.start()
 
     @Slot(str)
     def handle_serial_line(self, line):
         self.last_line_label.setText(line)
+
+        mode_match = MODE_RE.match(line)
+        if mode_match:
+            mode = mode_match.group("mode")
+            self._mode = mode
+            value = mode_match.group("value")
+            if value is not None:
+                self._manual_value = int(value)
+            self.update_mode_widgets()
+            return
 
         match = REPORT_RE.match(line)
         if not match:
@@ -95,6 +140,29 @@ class SensorApp(QMainWindow):
 
         self.sensor_value_label.setText(sensor)
         self.display_value_label.setText(display)
+
+        if self._mode == MODE_MANUAL and display.isdigit():
+            self._manual_value = int(display)
+
+    def update_mode_widgets(self):
+        if self._mode == MODE_AUTOMATIC:
+            self.mode_value_label.setText("automatic")
+        else:
+            self.mode_value_label.setText(f"manual ({self._manual_value})")
+        self.mode_button.setText(
+            "Switch to Manual" if self._mode == MODE_AUTOMATIC else "Switch to Automatic"
+        )
+
+    @Slot()
+    def toggle_mode(self):
+        if self._mode == MODE_AUTOMATIC:
+            manual_value = self._manual_value
+            display_text = self.display_value_label.text().strip()
+            if display_text.isdigit():
+                manual_value = int(display_text)
+            self.worker.command_requested.emit(f"MANUAL {manual_value}")
+        else:
+            self.worker.command_requested.emit("AUTO")
 
     @Slot(str)
     def handle_serial_error(self, message):
@@ -127,6 +195,10 @@ class SensorApp(QMainWindow):
             return
 
         self._shutting_down = True
+        try:
+            self.worker.command_requested.disconnect(self.worker.send_command)
+        except (TypeError, RuntimeError):
+            pass
         self.worker.stop()
         self.thread.quit()
         self.thread.wait()
