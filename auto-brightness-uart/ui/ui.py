@@ -1,6 +1,7 @@
 import re
 import signal
 import sys
+from pathlib import Path
 
 import serial
 from PySide6.QtCore import QObject, Signal, Slot, QThread, Qt
@@ -24,6 +25,7 @@ MODE_RE = re.compile(r"^mode=(?P<mode>automatic|manual)(?: value=(?P<value>\d+))
 
 MODE_AUTOMATIC = "automatic"
 MODE_MANUAL = "manual"
+UI_DIR = Path(__file__).resolve().parent
 
 
 class SerialWorker(QObject):
@@ -75,6 +77,7 @@ class SensorApp(QMainWindow):
         self._shutting_down = False
         self._mode = MODE_AUTOMATIC
         self._manual_value = 0
+        self._display_value = None
         self.init_ui()
         self.setup_serial()
         self.setup_tray()
@@ -112,6 +115,7 @@ class SensorApp(QMainWindow):
         layout.addRow("Last line", self.last_line_label)
         self.setCentralWidget(central)
         self.update_mode_widgets()
+        self.update_tray_icon()
 
     def setup_serial(self):
         self.thread = QThread()
@@ -150,6 +154,8 @@ class SensorApp(QMainWindow):
 
         self.sensor_value_label.setText(sensor)
         self.display_value_label.setText(display)
+        self._display_value = None if display == "unknown" else int(display)
+        self.update_tray_icon()
 
         if self._mode == MODE_MANUAL and display.isdigit():
             self._manual_value = int(display)
@@ -167,6 +173,28 @@ class SensorApp(QMainWindow):
         self.mode_button.setText(
             "Switch to Manual" if self._mode == MODE_AUTOMATIC else "Switch to Automatic"
         )
+
+    def update_tray_icon(self):
+        if not hasattr(self, "tray_icon"):
+            return
+
+        icon_name = self._get_display_icon_name()
+        self.tray_icon.setIcon(QIcon(str(UI_DIR / icon_name)))
+
+    def _get_display_icon_name(self):
+        if self._display_value is None:
+            return "brightness-unknown.png"
+
+        value = max(0, min(100, self._display_value))
+        if value < 20:
+            return "brightness0.png"
+        if value < 40:
+            return "brightness1.png"
+        if value < 60:
+            return "brightness2.png"
+        if value < 80:
+            return "brightness3.png"
+        return "brightness4.png"
 
     def _set_manual_value(self, value):
         self.manual_value_spinbox.blockSignals(True)
@@ -195,7 +223,7 @@ class SensorApp(QMainWindow):
 
     def setup_tray(self):
         self.tray_icon = QSystemTrayIcon(self)
-        self.tray_icon.setIcon(QIcon("brightness-auto.png"))
+        self.update_tray_icon()
 
         tray_menu = QMenu()
         show_action = tray_menu.addAction("Show")
