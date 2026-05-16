@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
     QMenu,
     QPushButton,
     QSystemTrayIcon,
+    QSpinBox,
     QWidget,
 )
 
@@ -88,6 +89,10 @@ class SensorApp(QMainWindow):
         self.display_value_label = QLabel("unknown")
         self.mode_value_label = QLabel("automatic")
         self.mode_button = QPushButton("Switch to Manual")
+        self.manual_value_spinbox = QSpinBox()
+        self.manual_value_spinbox.setRange(0, 100)
+        self.manual_value_spinbox.setValue(0)
+        self.manual_apply_button = QPushButton("Apply Manual Value")
         self.last_line_label = QLabel("waiting for serial data")
 
         for label in (
@@ -102,8 +107,11 @@ class SensorApp(QMainWindow):
         layout.addRow("Display", self.display_value_label)
         layout.addRow("Mode", self.mode_value_label)
         layout.addRow("", self.mode_button)
+        layout.addRow("Manual value", self.manual_value_spinbox)
+        layout.addRow("", self.manual_apply_button)
         layout.addRow("Last line", self.last_line_label)
         self.setCentralWidget(central)
+        self.update_mode_widgets()
 
     def setup_serial(self):
         self.thread = QThread()
@@ -115,6 +123,7 @@ class SensorApp(QMainWindow):
         self.worker.error_occurred.connect(self.handle_serial_error)
         self.worker.command_requested.connect(self.worker.send_command)
         self.mode_button.clicked.connect(self.toggle_mode)
+        self.manual_apply_button.clicked.connect(self.apply_manual_value)
         self.thread.start()
 
     @Slot(str)
@@ -128,6 +137,7 @@ class SensorApp(QMainWindow):
             value = mode_match.group("value")
             if value is not None:
                 self._manual_value = int(value)
+                self._set_manual_value(self._manual_value)
             self.update_mode_widgets()
             return
 
@@ -143,26 +153,41 @@ class SensorApp(QMainWindow):
 
         if self._mode == MODE_MANUAL and display.isdigit():
             self._manual_value = int(display)
+            self._set_manual_value(self._manual_value)
 
     def update_mode_widgets(self):
         if self._mode == MODE_AUTOMATIC:
             self.mode_value_label.setText("automatic")
+            self.manual_value_spinbox.setEnabled(False)
+            self.manual_apply_button.setEnabled(False)
         else:
             self.mode_value_label.setText(f"manual ({self._manual_value})")
+            self.manual_value_spinbox.setEnabled(True)
+            self.manual_apply_button.setEnabled(True)
         self.mode_button.setText(
             "Switch to Manual" if self._mode == MODE_AUTOMATIC else "Switch to Automatic"
         )
 
+    def _set_manual_value(self, value):
+        self.manual_value_spinbox.blockSignals(True)
+        self.manual_value_spinbox.setValue(value)
+        self.manual_value_spinbox.blockSignals(False)
+
     @Slot()
     def toggle_mode(self):
         if self._mode == MODE_AUTOMATIC:
-            manual_value = self._manual_value
-            display_text = self.display_value_label.text().strip()
-            if display_text.isdigit():
-                manual_value = int(display_text)
-            self.worker.command_requested.emit(f"MANUAL {manual_value}")
+            self._manual_value = self.manual_value_spinbox.value()
+            self.worker.command_requested.emit(f"MANUAL {self._manual_value}")
         else:
             self.worker.command_requested.emit("AUTO")
+
+    @Slot()
+    def apply_manual_value(self):
+        if self._mode != MODE_MANUAL:
+            return
+
+        self._manual_value = self.manual_value_spinbox.value()
+        self.worker.command_requested.emit(f"MANUAL {self._manual_value}")
 
     @Slot(str)
     def handle_serial_error(self, message):
