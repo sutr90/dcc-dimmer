@@ -1,8 +1,10 @@
 import re
+import signal
 import sys
 
 import serial
 from PySide6.QtCore import QObject, Signal, Slot, QThread, Qt
+from PySide6.QtCore import QTimer
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QApplication,
@@ -47,6 +49,7 @@ class SerialWorker(QObject):
 class SensorApp(QMainWindow):
     def __init__(self):
         super().__init__()
+        self._shutting_down = False
         self.init_ui()
         self.setup_serial()
         self.setup_tray()
@@ -111,20 +114,43 @@ class SensorApp(QMainWindow):
         self.tray_icon.show()
 
     def closeEvent(self, event):
-        if self.tray_icon.isVisible():
+        if not self._shutting_down and self.tray_icon.isVisible():
             self.hide()
             event.ignore()
+            return
 
-    def actually_exit(self):
+        self.shutdown()
+        event.accept()
+
+    def shutdown(self):
+        if self._shutting_down:
+            return
+
+        self._shutting_down = True
         self.worker.stop()
         self.thread.quit()
         self.thread.wait()
+
+        if hasattr(self, "tray_icon"):
+            self.tray_icon.hide()
+
+    def actually_exit(self):
+        self.shutdown()
         QApplication.quit()
 
 
 def main():
     app = QApplication(sys.argv)
+
+    signal.signal(signal.SIGINT, lambda *_: app.quit())
+
+    sigint_timer = QTimer()
+    sigint_timer.timeout.connect(lambda: None)
+    sigint_timer.start(100)
+    app._sigint_timer = sigint_timer
+
     window = SensorApp()
+    app.aboutToQuit.connect(window.shutdown)
     window.show()
     sys.exit(app.exec())
 
