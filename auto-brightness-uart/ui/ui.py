@@ -116,6 +116,8 @@ class SensorApp(QMainWindow):
         self.setCentralWidget(central)
         self.update_mode_widgets()
         self.update_tray_icon()
+        self.adjustSize()
+        self.setFixedSize(self.size())
 
     def setup_serial(self):
         self.thread = QThread()
@@ -224,6 +226,7 @@ class SensorApp(QMainWindow):
     def setup_tray(self):
         self.tray_icon = QSystemTrayIcon(self)
         self.update_tray_icon()
+        self.tray_icon.activated.connect(self.handle_tray_activated)
 
         tray_menu = QMenu()
         show_action = tray_menu.addAction("Show")
@@ -233,6 +236,18 @@ class SensorApp(QMainWindow):
 
         self.tray_icon.setContextMenu(tray_menu)
         self.tray_icon.show()
+
+    @Slot(QSystemTrayIcon.ActivationReason)
+    def handle_tray_activated(self, reason):
+        if reason != QSystemTrayIcon.ActivationReason.DoubleClick:
+            return
+
+        if self.isVisible():
+            self.hide()
+        else:
+            self.showNormal()
+            self.raise_()
+            self.activateWindow()
 
     def closeEvent(self, event):
         if not self._shutting_down and self.tray_icon.isVisible():
