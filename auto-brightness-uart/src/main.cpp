@@ -159,8 +159,13 @@ void serviceDisplayBrightnessWrite(unsigned long now) {
   }
 
   if (sendDdcBrightness(pendingBrightness, now)) {
+    displayBrightness = pendingBrightness;
+    displayBrightnessKnown = true;
     brightnessWritePending = false;
-    scheduleDisplayBrightnessRead();
+    // Don't schedule an immediate read-back; many displays are slow to update
+    // their internal VCP status registers even as the physical brightness
+    // changes. The periodic polling will eventually confirm the value.
+    lastBrightnessReadMs = now;
   }
 }
 
