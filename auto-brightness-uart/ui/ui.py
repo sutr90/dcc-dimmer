@@ -13,6 +13,7 @@ from PySide6.QtCore import QTimer
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QApplication,
+    QHBoxLayout,
     QFormLayout,
     QLabel,
     QMainWindow,
@@ -204,8 +205,10 @@ class SensorApp(QMainWindow):
         layout.addRow("Display", self.display_value_label)
         layout.addRow("Mode", self.mode_value_label)
         layout.addRow(self.mode_button)
-        layout.addRow("Manual value", self.manual_value_spinbox)
-        layout.addRow("", self.manual_apply_button)
+        manual_row = QHBoxLayout()
+        manual_row.addWidget(self.manual_value_spinbox)
+        manual_row.addWidget(self.manual_apply_button)
+        layout.addRow(manual_row)
         if DEBUG_ENABLED:
             layout.addRow("Last line", self.last_line_label)
         self.setCentralWidget(central)
