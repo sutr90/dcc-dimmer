@@ -165,6 +165,8 @@ class SerialWorker(QObject):
 class SensorApp(QMainWindow):
     def __init__(self, serial_config):
         super().__init__()
+        self.worker = None
+        self.thread = None
         self._shutting_down = False
         self._mode = MODE_AUTOMATIC
         self._manual_value = 0
@@ -236,9 +238,10 @@ class SensorApp(QMainWindow):
     def setup_serial(self):
         debug_print("SensorApp.setup_serial")
 
-        if hasattr(self, "thread"):
+        if self.thread is not None:
             debug_print("SensorApp.setup_serial: cleaning up existing thread")
-            self.worker.stop()
+            if self.worker is not None:
+                self.worker.stop()
             self.thread.quit()
             self.thread.wait()
 
@@ -342,6 +345,10 @@ class SensorApp(QMainWindow):
     @Slot()
     def toggle_mode(self):
         debug_print("SensorApp.toggle_mode:", self._mode)
+        if self.worker is None:
+            debug_print("SensorApp.toggle_mode: worker not available")
+            return
+
         if self._mode == MODE_AUTOMATIC:
             self._manual_value = self.manual_value_spinbox.value()
             command = f"MANUAL {self._manual_value}"
@@ -355,7 +362,7 @@ class SensorApp(QMainWindow):
     @Slot()
     def apply_manual_value(self):
         debug_print("SensorApp.apply_manual_value:", self._mode)
-        if self._mode != MODE_MANUAL:
+        if self._mode != MODE_MANUAL or self.worker is None:
             return
 
         self._manual_value = self.manual_value_spinbox.value()
@@ -417,9 +424,11 @@ class SensorApp(QMainWindow):
 
         debug_print("SensorApp.shutdown: starting")
         self._shutting_down = True
-        self.worker.stop()
-        self.thread.quit()
-        self.thread.wait()
+        if self.worker is not None:
+            self.worker.stop()
+        if self.thread is not None:
+            self.thread.quit()
+            self.thread.wait()
 
         if hasattr(self, "tray_icon"):
             self.tray_icon.hide()
