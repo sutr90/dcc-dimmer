@@ -1,8 +1,12 @@
 #include <Arduino.h>
 
-#include "AmbientLightSensor.h"
 #include "CommandProcessor.h"
 #include "DdcDisplay.h"
+#ifdef AMBIENT_LIGHT_SENSOR_VEML7700
+#include "Veml7700AmbientLightSensor.h"
+#else
+#include "Opt3001AmbientLightSensor.h"
+#endif
 #include "SerialCommandBuffer.h"
 
 const unsigned long REPORT_INTERVAL_MS = 1000;
@@ -21,6 +25,13 @@ uint8_t pendingBrightness = 0;
 uint8_t displayBrightness = 0;
 AppState appState;
 SerialCommandBuffer serialCommandBuffer;
+#ifdef AMBIENT_LIGHT_SENSOR_VEML7700
+Veml7700AmbientLightSensor veml7700AmbientLightSensor;
+AmbientLightSensor &ambientLightSensor = veml7700AmbientLightSensor;
+#else
+Opt3001AmbientLightSensor opt3001AmbientLightSensor;
+AmbientLightSensor &ambientLightSensor = opt3001AmbientLightSensor;
+#endif
 
 void handleSerialInput();
 void queueDisplayBrightnessWrite(uint8_t brightness);
@@ -44,7 +55,7 @@ void setup() {
   Serial.println("ddc=debug_enabled");
 #endif
   scheduleDisplayBrightnessRead();
-  beginAmbientLightSensor();
+  ambientLightSensor.begin();
   initializeAppState(appState);
 }
 
@@ -61,7 +72,7 @@ void loop() {
     lastReportMs = now;
 
     float sensorValue = 0.0f;
-    const bool sensorValueKnown = readAmbientLightLux(sensorValue);
+    const bool sensorValueKnown = ambientLightSensor.readLux(sensorValue);
     printSensorReport(sensorValueKnown, sensorValue);
 
     if (sensorValueKnown && appState.mode == OperatingMode::Automatic) {
