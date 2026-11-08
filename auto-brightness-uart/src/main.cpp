@@ -28,9 +28,11 @@ SerialCommandBuffer serialCommandBuffer;
 #ifdef AMBIENT_LIGHT_SENSOR_VEML7700
 Veml7700AmbientLightSensor veml7700AmbientLightSensor;
 AmbientLightSensor &ambientLightSensor = veml7700AmbientLightSensor;
-#else
+#elif AMBIENT_LIGHT_SENSOR_OPT3001
 Opt3001AmbientLightSensor opt3001AmbientLightSensor;
 AmbientLightSensor &ambientLightSensor = opt3001AmbientLightSensor;
+#else
+#error "a sensor type muset be specified"
 #endif
 
 void handleSerialInput();
