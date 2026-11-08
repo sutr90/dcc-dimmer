@@ -76,7 +76,7 @@ void initializeAppState(AppState &state) {
   buildScaledSensorThresholds(state.scaleFactor, state.scaledSensorThresholds);
 }
 
-uint8_t selectI2cValue(float rawSensorValue, const AppState &state) {
+uint8_t selectI2cValue(const float rawSensorValue, const AppState &state) {
   if (state.mode == OperatingMode::Manual) {
     return state.manualValue;
   }
@@ -84,7 +84,7 @@ uint8_t selectI2cValue(float rawSensorValue, const AppState &state) {
   return scaleSensorValue(rawSensorValue, state.scaledSensorThresholds);
 }
 
-CommandResult processCommand(char *command, AppState &state) {
+CommandResult processCommand(const char *command, AppState &state) {
   if (*command == '\0') {
     return {CommandStatus::Ignored, state.manualValue, state.scaleFactor};
   }
@@ -99,7 +99,7 @@ CommandResult processCommand(char *command, AppState &state) {
     separator = strchr(command, '=');
   }
 
-  char *valueText = command;
+  const char *valueText = command;
   if (separator != nullptr) {
     // Split commands like "SET 42" and "SCALE=2.669" in-place so command and
     // value can be parsed without allocating another buffer on the Nano.

@@ -5,16 +5,16 @@
 
 namespace {
 
-const uint8_t VEML7700_ADDRESS = 0x10;
-const uint8_t CONFIG_REGISTER = 0x00;
-const uint8_t POWER_SAVE_REGISTER = 0x03;
-const uint8_t ALS_REGISTER = 0x04;
-const uint8_t SDA_PIN = 11;
-const uint8_t SCL_PIN = 12;
+constexpr uint8_t VEML7700_ADDRESS = 0x10;
+constexpr uint8_t CONFIG_REGISTER = 0x00;
+constexpr uint8_t POWER_SAVE_REGISTER = 0x03;
+constexpr uint8_t ALS_REGISTER = 0x04;
+constexpr uint8_t SDA_PIN = 11;
+constexpr uint8_t SCL_PIN = 12;
 
-const float MAX_RESOLUTION = 0.0036f;
-const float MAX_GAIN = 2.0f;
-const float MAX_INTEGRATION_MS = 800.0f;
+constexpr float MAX_RESOLUTION = 0.0036f;
+constexpr float MAX_GAIN = 2.0f;
+constexpr float MAX_INTEGRATION_MS = 800.0f;
 
 uint8_t txBuffer[8];
 uint8_t rxBuffer[8];
@@ -24,7 +24,7 @@ uint8_t currentGain = 2;       // VEML7700 gain code: 1/8x
 uint8_t currentIntegration = 0; // VEML7700 integration code: 100 ms
 unsigned long lastReadMs = 0;
 
-int integrationTimeMs(uint8_t integration) {
+int integrationTimeMs(const uint8_t integration) {
   switch (integration) {
     case 0x0C: return 25;
     case 0x08: return 50;
@@ -36,7 +36,7 @@ int integrationTimeMs(uint8_t integration) {
   }
 }
 
-bool writeRegister(uint8_t reg, uint16_t value) {
+bool writeRegister(const uint8_t reg, const uint16_t value) {
   vemlWire.beginTransmission(VEML7700_ADDRESS);
   vemlWire.write(reg);
   vemlWire.write(static_cast<uint8_t>(value & 0xFF));
@@ -44,14 +44,14 @@ bool writeRegister(uint8_t reg, uint16_t value) {
   return vemlWire.endTransmission() == 0;
 }
 
-bool readRegister(uint8_t reg, uint16_t &value) {
+bool readRegister(const uint8_t reg, uint16_t &value) {
   vemlWire.beginTransmission(VEML7700_ADDRESS);
   vemlWire.write(reg);
   if (vemlWire.endTransmission(false) != 0) {
     return false;
   }
 
-  if (vemlWire.requestFrom(VEML7700_ADDRESS, static_cast<uint8_t>(2)) != 2) {
+  if (vemlWire.requestFrom(VEML7700_ADDRESS, 2) != 2) {
     while (vemlWire.available() > 0) {
       vemlWire.read();
     }
@@ -64,7 +64,7 @@ bool readRegister(uint8_t reg, uint16_t &value) {
   return true;
 }
 
-bool configure(uint8_t gain, uint8_t integration, bool enabled) {
+bool configure(const uint8_t gain, const uint8_t integration, const bool enabled) {
   const uint16_t config =
       (static_cast<uint16_t>(gain) << 11) |
       (static_cast<uint16_t>(integration) << 6) |
@@ -76,7 +76,7 @@ bool configure(uint8_t gain, uint8_t integration, bool enabled) {
   return writeRegister(CONFIG_REGISTER, config);
 }
 
-bool readAls(uint16_t &als, bool wait) {
+bool readAls(uint16_t &als, const bool wait) {
   const int integrationMs = integrationTimeMs(currentIntegration);
   if (integrationMs < 0) {
     return false;
@@ -105,7 +105,7 @@ float resolution() {
                       currentGain == 2 ? 0.125f : 0.25f));
 }
 
-float correctedLux(uint16_t als, bool correction) {
+float correctedLux(const uint16_t als, const bool correction) {
   float lux = resolution() * als;
   if (correction) {
     lux = (((6.0135e-13f * lux - 9.3924e-9f) * lux + 8.1488e-5f) * lux + 1.0023f) * lux;
@@ -114,7 +114,7 @@ float correctedLux(uint16_t als, bool correction) {
 }
 
 float autoLux() {
-  const uint8_t gains[] = {2, 3, 0, 1};       // 1/8, 1/4, 1, 2
+  constexpr uint8_t gains[] = {2, 3, 0, 1};       // 1/8, 1/4, 1, 2
   const uint8_t integrations[] = {0x0C, 0x08, 0x00, 0x01, 0x02, 0x03};
   uint8_t gainIndex = 0;
   uint8_t integrationIndex = 2;

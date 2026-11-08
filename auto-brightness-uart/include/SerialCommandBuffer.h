@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-const uint8_t SERIAL_COMMAND_BUFFER_SIZE = 32;
+constexpr uint8_t SERIAL_COMMAND_BUFFER_SIZE = 32;
 
 enum class SerialInputStatus {
   None,
@@ -26,7 +26,7 @@ class SerialCommandBuffer {
   void reset();
 
  private:
-  char buffer[SERIAL_COMMAND_BUFFER_SIZE];
+  char buffer[SERIAL_COMMAND_BUFFER_SIZE]{};
   uint8_t length;
 };
 

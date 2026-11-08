@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 
-const uint8_t MAX_I2C_VALUE = 100;
-const float DEFAULT_SCALE_FACTOR = 2.669f;
+constexpr uint8_t MAX_I2C_VALUE = 100;
+constexpr float DEFAULT_SCALE_FACTOR = 2.669f;
 
 // Builds the threshold table used to approximate round(scaleFactor * sqrt(raw)).
 // This does the expensive sqrt inversion only when the scale changes.

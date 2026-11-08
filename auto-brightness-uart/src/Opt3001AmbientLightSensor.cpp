@@ -3,7 +3,7 @@
 #include <ClosedCube_OPT3001.h>
 
 namespace {
-const uint8_t OPT3001_ADDRESS = 0x44;
+constexpr uint8_t OPT3001_ADDRESS = 0x44;
 }
 
 bool Opt3001AmbientLightSensor::begin() {

@@ -41,6 +41,6 @@ uint8_t selectI2cValue(float rawSensorValue, const AppState &state);
 
 // Applies one complete serial command to the app state.
 // The command buffer may be modified while tokenizing command/value parts.
-CommandResult processCommand(char *command, AppState &state);
+CommandResult processCommand(const char *command, AppState &state);
 
 #endif

@@ -5,17 +5,17 @@
 
 // DDC/CI uses the display's 7-bit I2C address. 0x37 is the common address for
 // the connected monitor on the DDC bus.
-const uint8_t DDC_DISPLAY_ADDRESS = 0x37;
-const uint8_t DDC_DISPLAY_WRITE_ADDRESS = DDC_DISPLAY_ADDRESS << 1;
-const uint8_t DDC_SOURCE_ADDRESS = 0x51;
-const uint8_t DDC_SET_VCP_FEATURE = 0x03;
-const uint8_t DDC_GET_VCP_FEATURE = 0x01;
-const uint8_t DDC_GET_VCP_REPLY = 0x02;
-const uint8_t DDC_VCP_BRIGHTNESS = 0x10;
-const uint8_t DDC_SET_VCP_LENGTH = 0x84;
-const uint8_t DDC_GET_VCP_LENGTH = 0x82;
-const uint8_t DDC_GET_VCP_REPLY_LENGTH = 11;
-const unsigned long DDC_BUS_IDLE_GUARD_MS = 10;
+constexpr uint8_t DDC_DISPLAY_ADDRESS = 0x37;
+constexpr uint8_t DDC_DISPLAY_WRITE_ADDRESS = DDC_DISPLAY_ADDRESS << 1;
+constexpr uint8_t DDC_SOURCE_ADDRESS = 0x51;
+constexpr uint8_t DDC_SET_VCP_FEATURE = 0x03;
+constexpr uint8_t DDC_GET_VCP_FEATURE = 0x01;
+constexpr uint8_t DDC_GET_VCP_REPLY = 0x02;
+constexpr uint8_t DDC_VCP_BRIGHTNESS = 0x10;
+constexpr uint8_t DDC_SET_VCP_LENGTH = 0x84;
+constexpr uint8_t DDC_GET_VCP_LENGTH = 0x82;
+constexpr uint8_t DDC_GET_VCP_REPLY_LENGTH = 11;
+constexpr unsigned long DDC_BUS_IDLE_GUARD_MS = 10;
 
 enum class DdcReadStatus {
   Deferred,

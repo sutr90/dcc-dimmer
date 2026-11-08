@@ -4,20 +4,19 @@
 #include <Wire.h>
 
 namespace {
-
-const uint8_t I2C_SDA_PIN = A4;
-const uint8_t I2C_SCL_PIN = A5;
+  constexpr uint8_t I2C_SDA_PIN = A4;
+  constexpr uint8_t I2C_SCL_PIN = A5;
 
 unsigned long busIdleSinceMs = 0;
 DdcDebugLogger debugLogger = nullptr;
 
-void logDdcDebug(DdcDebugEvent event, uint8_t value, const uint8_t *data = nullptr, uint8_t length = 0) {
+void logDdcDebug(const DdcDebugEvent event, const uint8_t value, const uint8_t *data = nullptr, const uint8_t length = 0) {
   if (debugLogger != nullptr) {
     debugLogger(event, value, data, length);
   }
 }
 
-bool isBusIdle(unsigned long now) {
+bool isBusIdle(const unsigned long now) {
   // In a multi-master DDC setup, another master may already be using the bus.
   // Only start our transaction after both open-drain lines have been released
   // high for a short guard period.
@@ -31,7 +30,7 @@ bool isBusIdle(unsigned long now) {
   return now - busIdleSinceMs >= DDC_BUS_IDLE_GUARD_MS;
 }
 
-uint8_t ddcChecksum(const uint8_t *message, uint8_t length) {
+uint8_t ddcChecksum(const uint8_t *message, const uint8_t length) {
   // DDC/CI checksum is the XOR of the display write address and every payload
   // byte, excluding the checksum byte itself.
   uint8_t checksum = DDC_DISPLAY_WRITE_ADDRESS;
@@ -43,7 +42,7 @@ uint8_t ddcChecksum(const uint8_t *message, uint8_t length) {
   return checksum;
 }
 
-bool writeDdcMessage(const uint8_t *message, uint8_t length, unsigned long now) {
+bool writeDdcMessage(const uint8_t *message, const uint8_t length, const unsigned long now) {
   if (!isBusIdle(now)) {
     return false;
   }
@@ -70,11 +69,11 @@ void beginDdcDisplay() {
   busIdleSinceMs = millis();
 }
 
-void setDdcDebugLogger(DdcDebugLogger logger) {
+void setDdcDebugLogger(const DdcDebugLogger logger) {
   debugLogger = logger;
 }
 
-bool sendDdcBrightness(uint8_t brightness, unsigned long now) {
+bool sendDdcBrightness(const uint8_t brightness, const unsigned long now) {
   const uint8_t message[] = {
     DDC_SOURCE_ADDRESS,
     DDC_SET_VCP_LENGTH,
@@ -87,8 +86,8 @@ bool sendDdcBrightness(uint8_t brightness, unsigned long now) {
   return writeDdcMessage(message, sizeof(message), now);
 }
 
-bool requestDdcBrightness(unsigned long now) {
-  const uint8_t message[] = {
+bool requestDdcBrightness(const unsigned long now) {
+  constexpr uint8_t message[] = {
     DDC_SOURCE_ADDRESS,
     DDC_GET_VCP_LENGTH,
     DDC_GET_VCP_FEATURE,
@@ -98,7 +97,7 @@ bool requestDdcBrightness(unsigned long now) {
   return writeDdcMessage(message, sizeof(message), now);
 }
 
-DdcReadStatus readDdcBrightness(uint8_t &brightness, unsigned long now) {
+DdcReadStatus readDdcBrightness(uint8_t &brightness, const unsigned long now) {
   if (!isBusIdle(now)) {
     return DdcReadStatus::Deferred;
   }
@@ -116,8 +115,8 @@ DdcReadStatus readDdcBrightness(uint8_t &brightness, unsigned long now) {
     return DdcReadStatus::Failed;
   }
 
-  for (uint8_t i = 0; i < DDC_GET_VCP_REPLY_LENGTH; i++) {
-    response[i] = Wire.read();
+  for (unsigned char & i : response) {
+    i = Wire.read();
   }
 
   logDdcDebug(DdcDebugEvent::Reply, DDC_GET_VCP_REPLY_LENGTH, response, DDC_GET_VCP_REPLY_LENGTH);

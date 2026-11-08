@@ -4,7 +4,7 @@ SerialCommandBuffer::SerialCommandBuffer() : length(0) {
   buffer[0] = '\0';
 }
 
-SerialInputStatus SerialCommandBuffer::push(char incoming) {
+SerialInputStatus SerialCommandBuffer::push(const char incoming) {
   if (incoming == '\r') {
     // Accept CRLF line endings without making '\r' part of the command.
     return SerialInputStatus::None;

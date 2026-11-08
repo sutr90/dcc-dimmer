@@ -9,41 +9,41 @@
 #endif
 #include "SerialCommandBuffer.h"
 
-const unsigned long REPORT_INTERVAL_MS = 1000;
-const unsigned long DDC_BRIGHTNESS_READ_DELAY_MS = 50;
-const unsigned long DDC_BRIGHTNESS_POLL_INTERVAL_MS = 1000;
+constexpr unsigned long REPORT_INTERVAL_MS = 1000;
+constexpr unsigned long DDC_BRIGHTNESS_READ_DELAY_MS = 50;
+constexpr unsigned long DDC_BRIGHTNESS_POLL_INTERVAL_MS = 1000;
 
-unsigned long lastReportMs = 0;
-unsigned long brightnessRequestMs = 0;
-unsigned long lastBrightnessReadMs = 0;
-bool brightnessWritePending = false;
-bool brightnessReadRequestPending = false;
-bool brightnessReadPending = false;
-bool displayBrightnessKnown = false;
-bool needsReadBack = false;
-uint8_t pendingBrightness = 0;
-uint8_t displayBrightness = 0;
-AppState appState;
-SerialCommandBuffer serialCommandBuffer;
+static unsigned long lastReportMs = 0;
+static unsigned long brightnessRequestMs = 0;
+static unsigned long lastBrightnessReadMs = 0;
+static bool brightnessWritePending = false;
+static bool brightnessReadRequestPending = false;
+static bool brightnessReadPending = false;
+static bool displayBrightnessKnown = false;
+static bool needsReadBack = false;
+static uint8_t pendingBrightness = 0;
+static uint8_t displayBrightness = 0;
+static AppState appState;
+static SerialCommandBuffer serialCommandBuffer;
 #ifdef AMBIENT_LIGHT_SENSOR_VEML7700
-Veml7700AmbientLightSensor veml7700AmbientLightSensor;
-AmbientLightSensor &ambientLightSensor = veml7700AmbientLightSensor;
+static Veml7700AmbientLightSensor veml7700AmbientLightSensor;
+static AmbientLightSensor &ambientLightSensor = veml7700AmbientLightSensor;
 #elif AMBIENT_LIGHT_SENSOR_OPT3001
-Opt3001AmbientLightSensor opt3001AmbientLightSensor;
-AmbientLightSensor &ambientLightSensor = opt3001AmbientLightSensor;
+static Opt3001AmbientLightSensor opt3001AmbientLightSensor;
+static AmbientLightSensor &ambientLightSensor = opt3001AmbientLightSensor;
 #else
 #error "a sensor type muset be specified"
 #endif
 
-void handleSerialInput();
-void queueDisplayBrightnessWrite(uint8_t brightness);
-void serviceDisplayBrightnessWrite(unsigned long now);
-void serviceDisplayBrightnessRequest(unsigned long now);
-void serviceDisplayBrightnessRead(unsigned long now);
-void serviceDisplayBrightnessPolling(unsigned long now);
-void scheduleDisplayBrightnessRead();
-void printCommandResult(const CommandResult &result);
-void printSensorReport(bool sensorValueKnown, float sensorValue);
+static void handleSerialInput();
+static void queueDisplayBrightnessWrite(uint8_t brightness);
+static void serviceDisplayBrightnessWrite(unsigned long now);
+static void serviceDisplayBrightnessRequest(unsigned long now);
+static void serviceDisplayBrightnessRead(unsigned long now);
+static void serviceDisplayBrightnessPolling(unsigned long now);
+static void scheduleDisplayBrightnessRead();
+static void printCommandResult(const CommandResult &result);
+static void printSensorReport(bool sensorValueKnown, float sensorValue);
 #ifdef DDC_DEBUG
 void printDdcDebug(DdcDebugEvent event, uint8_t value, const uint8_t *data, uint8_t length);
 void printHexByte(uint8_t value);
@@ -144,8 +144,14 @@ void printHexByte(uint8_t value) {
 
 void handleSerialInput() {
   while (Serial.available() > 0) {
-    const char incoming = Serial.read();
-    const SerialInputStatus status = serialCommandBuffer.push(incoming);
+    const int incoming = Serial.read();
+    if (incoming == -1)
+    {
+      continue;
+    }
+
+    const char readByte = static_cast<const char>(incoming);
+    const SerialInputStatus status = serialCommandBuffer.push(readByte);
 
     if (status == SerialInputStatus::LineReady) {
       // Process complete commands only; partial serial input never blocks the
@@ -162,7 +168,7 @@ void handleSerialInput() {
   }
 }
 
-void queueDisplayBrightnessWrite(uint8_t brightness) {
+void queueDisplayBrightnessWrite(const uint8_t brightness) {
   if (displayBrightnessKnown && brightness == displayBrightness) {
     return;
   }
@@ -170,7 +176,7 @@ void queueDisplayBrightnessWrite(uint8_t brightness) {
   brightnessWritePending = true;
 }
 
-void serviceDisplayBrightnessWrite(unsigned long now) {
+void serviceDisplayBrightnessWrite(const unsigned long now) {
   if (!brightnessWritePending || brightnessReadRequestPending || brightnessReadPending) {
     return;
   }
@@ -184,7 +190,7 @@ void serviceDisplayBrightnessWrite(unsigned long now) {
   }
 }
 
-void serviceDisplayBrightnessRequest(unsigned long now) {
+void serviceDisplayBrightnessRequest(const unsigned long now) {
   if (!brightnessReadRequestPending) {
     return;
   }
@@ -196,7 +202,7 @@ void serviceDisplayBrightnessRequest(unsigned long now) {
   }
 }
 
-void serviceDisplayBrightnessRead(unsigned long now) {
+void serviceDisplayBrightnessRead(const unsigned long now) {
   if (!brightnessReadPending || now - brightnessRequestMs < DDC_BRIGHTNESS_READ_DELAY_MS) {
     return;
   }
@@ -217,7 +223,7 @@ void serviceDisplayBrightnessRead(unsigned long now) {
   brightnessReadPending = false;
 }
 
-void serviceDisplayBrightnessPolling(unsigned long now) {
+void serviceDisplayBrightnessPolling(const unsigned long now) {
   if (brightnessWritePending || brightnessReadRequestPending || brightnessReadPending) {
     return;
   }
@@ -259,7 +265,7 @@ void printCommandResult(const CommandResult &result) {
   }
 }
 
-void printSensorReport(bool sensorValueKnown, float sensorValue) {
+void printSensorReport(const bool sensorValueKnown, const float sensorValue) {
   Serial.print("sensor=");
   if (sensorValueKnown) {
     Serial.print(sensorValue, 2);
